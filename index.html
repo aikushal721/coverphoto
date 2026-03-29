@@ -43,11 +43,7 @@
             --border: #e2e8f0;
         }
 
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
-            margin: 0; padding: 0; background-color: var(--bg-body);
-            display: flex; height: 100vh; overflow: hidden;
-        }
+        font-family: 'Plus Jakarta Sans'
 
         /* --- MAIN CONTENT --- */
         .main-content { 
@@ -59,16 +55,18 @@
         @media (max-width: 768px) {
 
     body {
-        height: auto; /* 🔥 important */
+        min-height: auto; /* 🔥 mobile ma natural flow */
     }
 
     .main-content {
-        min-height: 100vh;
+        flex: unset;
     }
 
     .footer-minimal {
-        margin-top: 20px; /* instead of auto */
+        margin-top: 15px; /* normal spacing */
     }
+
+}
 }
 
         /* Topbar */
