@@ -25,21 +25,48 @@
         }
 
         /* --- MAIN CONTENT --- */
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: visible; /* Prevent internal scrollbars */
+        }
+
+        /* Hide Scrollbar explicitly across browsers */
+        .main-content::-webkit-scrollbar {
+            display: none;
+        }
+        .main-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
 
         /* Topbar */
         .topbar {
             padding: 20px 40px; background: rgba(248, 249, 250, 0.8);
-            backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(10px); 
+            display: flex; 
+            justify-content: center; /* Center the title */
+            align-items: center;
             position: sticky; top: 0; z-index: 10;
         }
-        .topbar h1 { font-size: 20px; font-weight: 700; margin: 0; color: var(--text-dark); }
+        .topbar h1 { 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin: 0; 
+            color: var(--text-dark); 
+            text-align: center; /* Center text within h1 */
+        }
         
-        .insta-link { font-size: 22px; color: var(--text-dark); transition: 0.3s; display: inline-block; }
-        .insta-link:hover { color: #e1306c; transform: translateY(-2px); }
-
         /* Dashboard Canvas Area */
-        .workspace { padding: 0 40px 40px 40px; display: flex; flex-direction: column; align-items: center; }
+        .workspace { 
+            padding: 0 40px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex-grow: 1; /* Grow to fill available space */
+            justify-content: center; /* Center content vertically too */
+        }
         
         .canvas-card {
             background: #ffffff; padding: 30px; border-radius: 24px;
@@ -59,7 +86,7 @@
         }
         canvas {
             max-width: 100%; height: auto !important; 
-            max-height: 65vh; 
+            max-height: 60vh; /* Reduced to avoid scroll */
             box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 4px; background: white;
             cursor: pointer;
             touch-action: none;
@@ -81,12 +108,18 @@
 
         /* Footer minimal */
         .footer-minimal {
-            padding: 24px 40px; border-top: 1px solid var(--border);
+            padding: 15px 40px; 
+            border-top: 1px solid var(--border);
             display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted);
+            margin-top: auto; /* Push to bottom */
         }
+        .footer-minimal .insta-link { font-size: 20px; color: var(--text-dark); transition: 0.3s; display: inline-block; }
+        .footer-minimal .insta-link:hover { color: #e1306c; transform: translateY(-2px); }
 
         @media (max-width: 900px) {
             .topbar { padding: 20px; }
+            .workspace { padding: 0 20px; }
+            .footer-minimal { padding: 15px 20px; }
         }
     </style>
 </head>
