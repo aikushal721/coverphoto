@@ -104,9 +104,24 @@
         }
         .btn-reset { background: #fee2e2; color: #ef4444; }
         .btn-reset:hover { background: #fecaca; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
-        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-ready {
+    background: #16a34a;
+    color: white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+.btn-ready:hover {
+    background: #15803d;
+    transform: translateY(-1px);
+}
 
+.btn-clear {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+.btn-clear:hover {
+    background: #e2e8f0;
+}
         /* Footer minimal */
         .footer-minimal {
     padding: 24px 40px;
@@ -143,16 +158,30 @@
                 </div>
 
                 <div class="action-bar">
-                    <button class="btn btn-reset" onclick="resetControls()">
-                        <i class="fa-solid fa-rotate-left"></i> Reset
-                    </button>
-                    <button class="btn btn-primary" onclick="downloadJPG()">
-                        <i class="fa-solid fa-image"></i> Export JPG
-                    </button>
-                    <button class="btn btn-primary" style="background: #111827;" onclick="downloadPDF()">
-                        <i class="fa-solid fa-file-pdf"></i> Export PDF
-                    </button>
-                </div>
+    <button class="btn btn-ready" onclick="markReadyToPrint()">
+        <i class="fa-solid fa-check"></i> Ready to Print
+    </button>
+
+    <button class="btn btn-clear" onclick="clearLeftImage()">
+        <i class="fa-solid fa-image"></i> Clear Left
+    </button>
+
+    <button class="btn btn-clear" onclick="clearRightImage()">
+        <i class="fa-solid fa-image"></i> Clear Right
+    </button>
+
+    <button class="btn btn-reset" onclick="resetControls()">
+        <i class="fa-solid fa-rotate-left"></i> Reset All
+    </button>
+
+    <button class="btn btn-primary" onclick="downloadJPG()">
+        <i class="fa-solid fa-image"></i> Export JPG
+    </button>
+
+    <button class="btn btn-primary" style="background: #111827;" onclick="downloadPDF()">
+        <i class="fa-solid fa-file-pdf"></i> Export PDF
+    </button>
+</div>
             </div>
         </div>
 
@@ -417,11 +446,50 @@
         }
 
         function resetControls() { 
-            leftState.src = ""; leftState.scale = 1; leftState.dx = 0; leftState.dy = 0;
-            rightState.src = ""; rightState.scale = 1; rightState.dx = 0; rightState.dy = 0;
-            generatePreview(); 
-        }
+    leftState.src = "";
+    leftState.img = new Image();
+    leftState.scale = 1;
+    leftState.dx = 0;
+    leftState.dy = 0;
 
+    rightState.src = "";
+    rightState.img = new Image();
+    rightState.scale = 1;
+    rightState.dx = 0;
+    rightState.dy = 0;
+
+    document.getElementById("status").innerText = "Ready";
+    document.getElementById("status").style.background = "#dcfce7";
+    document.getElementById("status").style.color = "#15803d";
+
+    generatePreview(); 
+}
+function clearLeftImage() {
+    leftState.src = "";
+    leftState.img = new Image();
+    leftState.scale = 1;
+    leftState.dx = 0;
+    leftState.dy = 0;
+    document.getElementById("status").innerText = "Left Cleared";
+    generatePreview();
+}
+
+function clearRightImage() {
+    rightState.src = "";
+    rightState.img = new Image();
+    rightState.scale = 1;
+    rightState.dx = 0;
+    rightState.dy = 0;
+    document.getElementById("status").innerText = "Right Cleared";
+    generatePreview();
+}
+
+function markReadyToPrint() {
+    const status = document.getElementById("status");
+    status.innerText = "Ready to Print";
+    status.style.background = "#dcfce7";
+    status.style.color = "#15803d";
+}
         function downloadJPG() {
             const link = document.createElement('a');
             link.download = 'Print_HK721.jpg';
