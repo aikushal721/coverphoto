@@ -83,58 +83,36 @@
       overflow: hidden;
     }
 
-    .cover-slot {
+    /* FRAME IMAGE */
+    .frame-image {
       position: absolute;
-      top: 2%;
-      height: 96%;
-      display: flex;
-      overflow: hidden;
-      border-radius: 16px;
-      cursor: pointer;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
-      transition: box-shadow 0.2s;
-      background: #111;
-    }
-
-    .cover-slot:hover { box-shadow: 0 4px 20px rgba(0,174,239,0.5); }
-
-    .cover-slot-1 { left: 6.5%; width: 40.5%; }
-    .cover-slot-2 { left: 52%; width: 42%; }
-
-    .blue-strip {
-      width: 12%;
-      min-width: 36px;
-      background: #00AEEF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      position: relative;
-    }
-
-    .blue-strip span {
-      color: white;
-      font-size: 10px;
-      font-weight: 800;
-      white-space: nowrap;
-      transform: rotate(-90deg);
-      font-family: Arial, sans-serif;
-      letter-spacing: 0.3px;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
       user-select: none;
+      pointer-events: none;
     }
 
-    .photo-area {
-      flex: 1;
-      background: #0a0a0a;
-      position: relative;
+    /* Upload Areas ONLY inside black blank spaces */
+    .upload-zone {
+      position: absolute;
       overflow: hidden;
+      border-radius: 28px;
+      cursor: pointer;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .photo-area img.user-photo {
+    .upload-zone:hover {
+      outline: 3px dashed rgba(0,174,239,0.9);
+      outline-offset: -3px;
+    }
+
+    .upload-zone img.user-photo {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -143,7 +121,7 @@
 
     .placeholder {
       text-align: center;
-      color: #444;
+      color: rgba(255,255,255,0.8);
       padding: 20px;
       pointer-events: none;
     }
@@ -156,38 +134,30 @@
     .placeholder .label {
       font-size: 11px;
       font-weight: 600;
-      color: #555;
+      color: rgba(255,255,255,0.85);
       line-height: 1.5;
     }
 
-    .placeholder .size-hint {
-      margin-top: 6px;
-      font-size: 9px;
-      color: #333;
-      background: #1a1a1a;
-      padding: 3px 8px;
-      border-radius: 10px;
-    }
-
-    .photo-area::after {
-      content: '📷 Click to Upload';
+    .photo-overlay {
       position: absolute;
-      bottom: 8px;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(0,174,239,0.85);
+      background: rgba(0,174,239,0.9);
       color: white;
-      font-size: 9px;
+      font-size: 10px;
       font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 10px;
+      padding: 5px 12px;
+      border-radius: 12px;
       opacity: 0;
       transition: opacity 0.2s;
-      white-space: nowrap;
       pointer-events: none;
+      white-space: nowrap;
     }
 
-    .cover-slot:hover .photo-area::after { opacity: 1; }
+    .upload-zone:hover .photo-overlay {
+      opacity: 1;
+    }
 
     .info-bar {
       display: flex;
@@ -245,12 +215,11 @@
         border-radius: 0;
       }
 
-      .cover-slot {
-        border-radius: 12px;
-        box-shadow: none !important;
+      .upload-zone:hover {
+        outline: none !important;
       }
 
-      .photo-area::after {
+      .photo-overlay {
         display: none !important;
       }
     }
@@ -278,32 +247,25 @@
   <div class="a4-wrapper">
     <div class="a4-page" id="a4Page">
 
-      <!-- LEFT COVER -->
-      <div class="cover-slot cover-slot-1" onclick="document.getElementById('file1').click()" id="slot1">
-        <div class="blue-strip">
-          <span>Shree Ram Mobile &amp; Accessories | 75738 00245</span>
+      <!-- MAIN FRAME IMAGE -->
+      <img src="Mobile Back Cover Area-01.png" class="frame-image" id="frameImage" alt="Frame Design">
+
+      <!-- LEFT BLANK AREA -->
+      <div class="upload-zone" id="zone1" onclick="document.getElementById('file1').click()">
+        <div class="placeholder" id="ph1">
+          <div class="icon">🖼️</div>
+          <div class="label">Click to Upload<br>Left Cover Photo</div>
         </div>
-        <div class="photo-area" id="photoArea1">
-          <div class="placeholder" id="ph1">
-            <div class="icon">🖼️</div>
-            <div class="label">Click to Upload<br>Left Cover Photo</div>
-            <div class="size-hint">4.5 × 7.7 inch</div>
-          </div>
-        </div>
+        <div class="photo-overlay">📷 Upload Left Photo</div>
       </div>
 
-      <!-- RIGHT COVER -->
-      <div class="cover-slot cover-slot-2" onclick="document.getElementById('file2').click()" id="slot2">
-        <div class="blue-strip">
-          <span>Shree Ram Mobile &amp; Accessories | 75738 00245</span>
+      <!-- RIGHT BLANK AREA -->
+      <div class="upload-zone" id="zone2" onclick="document.getElementById('file2').click()">
+        <div class="placeholder" id="ph2">
+          <div class="icon">🖼️</div>
+          <div class="label">Click to Upload<br>Right Cover Photo</div>
         </div>
-        <div class="photo-area" id="photoArea2">
-          <div class="placeholder" id="ph2">
-            <div class="icon">🖼️</div>
-            <div class="label">Click to Upload<br>Right Cover Photo</div>
-            <div class="size-hint">4.5 × 7.7 inch</div>
-          </div>
-        </div>
+        <div class="photo-overlay">📷 Upload Right Photo</div>
       </div>
 
     </div>
@@ -312,29 +274,69 @@
   <div class="info-bar">
     <div class="info-item"><div class="info-val">A4 Landscape</div><div class="info-key">Page Format</div></div>
     <div class="info-item"><div class="info-val">300 DPI</div><div class="info-key">Export Quality</div></div>
-    <div class="info-item"><div class="info-val">4.5 × 7.7"</div><div class="info-key">Each Cover Size</div></div>
-    <div class="info-item"><div class="info-val">2 Covers</div><div class="info-key">Per A4 Sheet</div></div>
+    <div class="info-item"><div class="info-val">Frame Fixed</div><div class="info-key">Design Layout</div></div>
+    <div class="info-item"><div class="info-val">2 Upload Areas</div><div class="info-key">Photo Slots</div></div>
     <div class="info-item"><div class="info-val">PNG / Print</div><div class="info-key">Export Options</div></div>
   </div>
 
-  <div class="status" id="statusMsg">⏳ Loading default image...</div>
+  <div class="status" id="statusMsg">👆 Upload photos only inside the 2 blank areas</div>
 
   <canvas id="exportCanvas"></canvas>
 
   <script>
     const photos = { 1: null, 2: null };
     const IMG_CACHE = { 1: null, 2: null };
+    const FRAME_SRC = "Mobile Back Cover Area-01.png";
 
-    // IMPORTANT: keep this file in same folder as index.html
-    const defaultImage = "Mobile Back Cover Area-01.png";
+    let FRAME_IMG = new Image();
+    FRAME_IMG.crossOrigin = "anonymous";
+    FRAME_IMG.src = FRAME_SRC;
+
+    // BLANK AREA COORDINATES based on your provided frame image
+    // percentages relative to full A4 preview
+    const zones = {
+      1: {
+        left: 0.117,
+        top: 0.116,
+        width: 0.354,
+        height: 0.775,
+        radius: 28
+      },
+      2: {
+        left: 0.542,
+        top: 0.116,
+        width: 0.356,
+        height: 0.775,
+        radius: 28
+      }
+    };
 
     function setStatus(msg) {
       document.getElementById('statusMsg').textContent = msg;
     }
 
+    function positionZones() {
+      const page = document.getElementById('a4Page');
+      const pageRect = page.getBoundingClientRect();
+
+      [1, 2].forEach(slot => {
+        const zone = document.getElementById('zone' + slot);
+        const z = zones[slot];
+
+        zone.style.left = (z.left * 100) + '%';
+        zone.style.top = (z.top * 100) + '%';
+        zone.style.width = (z.width * 100) + '%';
+        zone.style.height = (z.height * 100) + '%';
+        zone.style.borderRadius = z.radius + 'px';
+      });
+    }
+
     function showPhotoInSlot(slot, src) {
-      const area = document.getElementById('photoArea' + slot);
-      area.innerHTML = `<img class="user-photo" src="${src}" alt="Photo ${slot}">`;
+      const zone = document.getElementById('zone' + slot);
+      zone.innerHTML = `
+        <img class="user-photo" src="${src}" alt="Photo ${slot}">
+        <div class="photo-overlay">📷 Change ${slot === 1 ? 'Left' : 'Right'} Photo</div>
+      `;
       document.getElementById('clearBtn' + slot).style.display = '';
     }
 
@@ -379,40 +381,17 @@
       photos[slot] = null;
       IMG_CACHE[slot] = null;
 
-      const area = document.getElementById('photoArea' + slot);
-      area.innerHTML = `
+      const zone = document.getElementById('zone' + slot);
+      zone.innerHTML = `
         <div class="placeholder" id="ph${slot}">
           <div class="icon">🖼️</div>
           <div class="label">Click to Upload<br>${slot === 1 ? 'Left' : 'Right'} Cover Photo</div>
-          <div class="size-hint">4.5 × 7.7 inch</div>
         </div>
+        <div class="photo-overlay">📷 Upload ${slot === 1 ? 'Left' : 'Right'} Photo</div>
       `;
 
       document.getElementById('clearBtn' + slot).style.display = 'none';
       setStatus('Photo ' + slot + ' cleared');
-    }
-
-    // Auto load same image into both slots
-    function loadDefaultImages() {
-      setStatus('⏳ Loading default image into both covers...');
-
-      cacheImage(1, defaultImage, (img1) => {
-        if (img1) {
-          showPhotoInSlot(1, defaultImage);
-
-          cacheImage(2, defaultImage, (img2) => {
-            if (img2) {
-              showPhotoInSlot(2, defaultImage);
-              setStatus('✅ Default image loaded into both covers');
-            } else {
-              setStatus('⚠️ Left image loaded, right failed');
-            }
-          });
-
-        } else {
-          setStatus('⚠️ Default image not found. Keep "Mobile Back Cover Area-01.png" in same folder.');
-        }
-      });
     }
 
     function downloadPNG() {
@@ -434,54 +413,27 @@
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(0, 0, W, H);
 
-      const slotDefs = [
-        { left: 0.065, top: 0.020, width: 0.405, height: 0.960, blueRatio: 0.12, photoIndex: 1 },
-        { left: 0.520, top: 0.020, width: 0.420, height: 0.960, blueRatio: 0.12, photoIndex: 2 }
-      ];
+      // Draw frame image first
+      if (FRAME_IMG.complete) {
+        ctx.drawImage(FRAME_IMG, 0, 0, W, H);
+      }
 
-      const BLUE = '#00AEEF';
-      const RADIUS = 42;
+      // Draw uploaded photos INSIDE blank zones only
+      [1, 2].forEach(slot => {
+        const img = IMG_CACHE[slot];
+        if (!img) return;
 
-      slotDefs.forEach(def => {
-        const x = def.left * W;
-        const y = def.top * H;
-        const w = def.width * W;
-        const h = def.height * H;
-        const bw = def.blueRatio * w;
+        const z = zones[slot];
+        const x = z.left * W;
+        const y = z.top * H;
+        const w = z.width * W;
+        const h = z.height * H;
+        const r = z.radius * (W / 1122); // scale radius proportionally
 
         ctx.save();
-
-        roundRect(ctx, x, y, w, h, RADIUS);
+        roundRect(ctx, x, y, w, h, r);
         ctx.clip();
-
-        // Photo area
-        const px = x + bw;
-        const pw = w - bw;
-        const cachedImg = IMG_CACHE[def.photoIndex];
-
-        if (cachedImg) {
-          drawCoverFit(ctx, cachedImg, px, y, pw, h);
-        } else {
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillRect(px, y, pw, h);
-        }
-
-        // Blue strip
-        ctx.fillStyle = BLUE;
-        ctx.fillRect(x, y, bw, h);
-
-        // Strip text
-        ctx.save();
-        ctx.fillStyle = '#FFFFFF';
-        const fontSize = Math.round(bw * 0.22);
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.translate(x + bw / 2, y + h / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillText('Shree Ram Mobile & Accessories  |  75738 00245', 0, 0);
-        ctx.restore();
-
+        drawCoverFit(ctx, img, x, y, w, h);
         ctx.restore();
       });
 
@@ -528,7 +480,8 @@
       ctx.closePath();
     }
 
-    window.addEventListener('load', loadDefaultImages);
+    window.addEventListener('load', positionZones);
+    window.addEventListener('resize', positionZones);
   </script>
 
 </body>
