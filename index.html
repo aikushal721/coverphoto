@@ -108,9 +108,10 @@
         let leftState = { zoom: 1, xOffset: 0, yOffset: 0 };
         let rightState = { zoom: 1, xOffset: 0, yOffset: 0 };
 
-        // Updated Coordinates: White space removed, full fit inside borders
-        const MASK_LEFT = { x: 0.12, y: 0.03, w: 0.35, h: 0.94 };
-        const MASK_RIGHT = { x: 0.55, y: 0.03, w: 0.35, h: 0.94 };
+        // Yahan maine frame ko thoda bada kar diya hai (width 0.40 kar di hai)
+        // Taaki photo borders ke pichhe tak jaye aur white gap bilkul na bache.
+        const MASK_LEFT = { x: 0.09, y: 0.02, w: 0.40, h: 0.96 };
+        const MASK_RIGHT = { x: 0.51, y: 0.02, w: 0.40, h: 0.96 };
 
         // Load Template Automaticaly from GitHub
         templateImg.src = 'template.png'; 
@@ -208,7 +209,7 @@
                 drawClippedAdjustedImage(rightImg, rightMaskPx, rightState);
             }
 
-            // Draw template on top to keep borders neat
+            // Draw template on top to keep borders neat (Chhupane ka kaam yahi line karti hai)
             ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
         }
 
