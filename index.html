@@ -104,7 +104,7 @@
         }
         .btn-reset { background: #fee2e2; color: #ef4444; }
         .btn-reset:hover { background: #fecaca; }
-        .btn-ready {
+       .btn-ready {
     background: #16a34a;
     color: white;
     box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
@@ -121,6 +121,30 @@
 }
 .btn-clear:hover {
     background: #e2e8f0;
+}
+
+.btn-jpg {
+    background: #f3f4f6;
+    color: #111827;
+    border: 1px solid #e5e7eb;
+}
+.btn-jpg:hover {
+    background: #e5e7eb;
+}
+
+.btn-pdf {
+    background: #dc2626 !important;
+    color: white !important;
+    border: none;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+.btn-pdf:hover {
+    background: #b91c1c !important;
+    transform: translateY(-1px);
+}
+
+.btn-pdf i {
+    color: white !important;
 }
         /* Footer minimal */
         .footer-minimal {
@@ -157,16 +181,16 @@
                     <input type="file" id="rightFilePicker" accept="image/*" style="display:none;">
                 </div>
 
-                <div class="action-bar">
-    <button class="btn btn-ready" onclick="markReadyToPrint()">
-        <i class="fa-solid fa-check"></i> Ready to Print
+<div class="action-bar">
+    <button class="btn btn-ready" onclick="printCanvasDirect()">
+        <i class="fa-solid fa-print"></i> Ready to Print
     </button>
 
-    <button class="btn btn-clear" onclick="clearLeftImage()">
+    <button class="btn btn-clear" id="clearLeftBtn" onclick="clearLeftImage()" style="display: none;">
         <i class="fa-solid fa-image"></i> Clear Left
     </button>
 
-    <button class="btn btn-clear" onclick="clearRightImage()">
+    <button class="btn btn-clear" id="clearRightBtn" onclick="clearRightImage()" style="display: none;">
         <i class="fa-solid fa-image"></i> Clear Right
     </button>
 
@@ -174,11 +198,11 @@
         <i class="fa-solid fa-rotate-left"></i> Reset All
     </button>
 
-    <button class="btn btn-primary" onclick="downloadJPG()">
+    <button class="btn btn-primary btn-jpg" onclick="downloadJPG()">
         <i class="fa-solid fa-image"></i> Export JPG
     </button>
 
-    <button class="btn btn-primary" style="background: #111827;" onclick="downloadPDF()">
+    <button class="btn btn-primary btn-pdf" onclick="downloadPDF()">
         <i class="fa-solid fa-file-pdf"></i> Export PDF
     </button>
 </div>
@@ -188,7 +212,7 @@
         <footer class="footer-minimal">
     <div>© 2026 Kushal Hirpara</div>
     <div>
-        <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" class="insta-link">
+        Made by ❤️ <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" class="insta-link">
             <i class="fa-brands fa-instagram"></i>
         </a>
     </div>
@@ -196,313 +220,390 @@
     </div>
 
     <script>
-        const canvas = document.getElementById('myCanvas');
-        const ctx = canvas.getContext('2d');
-        const leftFilePicker = document.getElementById('leftFilePicker');
-        const rightFilePicker = document.getElementById('rightFilePicker');
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+    const leftFilePicker = document.getElementById('leftFilePicker');
+    const rightFilePicker = document.getElementById('rightFilePicker');
 
-        let templateImg = new Image();
+    const clearLeftBtn = document.getElementById('clearLeftBtn');
+    const clearRightBtn = document.getElementById('clearRightBtn');
+    const statusBadge = document.getElementById('status');
 
-        const leftState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
-        const rightState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
+    let templateImg = new Image();
 
-        // SOLUTION: Mask ka area thoda bada kar diya gaya hai (width 0.35 se 0.38 ki hai)
-        // jisse photo template frame ke andar perfectly chup jaye aur white patti na dikhe.
-        const MASK_LEFT = { x: 0.11, y: 0.02, w: 0.38, h: 0.96 };
-        const MASK_RIGHT = { x: 0.54, y: 0.02, w: 0.38, h: 0.96 };
+    const leftState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
+    const rightState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
 
-        templateImg.src = 'template.png'; 
-        templateImg.onload = function() {
-            canvas.width = templateImg.width || 3508; 
-            canvas.height = templateImg.height || 2480;
-            generatePreview();
+    // Mask areas
+    const MASK_LEFT = { x: 0.11, y: 0.02, w: 0.38, h: 0.96 };
+    const MASK_RIGHT = { x: 0.54, y: 0.02, w: 0.38, h: 0.96 };
+
+    function updateClearButtons() {
+        clearLeftBtn.style.display = leftState.src ? "inline-flex" : "none";
+        clearRightBtn.style.display = rightState.src ? "inline-flex" : "none";
+    }
+
+    templateImg.src = 'template.png';
+    templateImg.onload = function () {
+        canvas.width = templateImg.width || 3508;
+        canvas.height = templateImg.height || 2480;
+        generatePreview();
+        updateClearButtons();
+    };
+
+    function getMasksPx() {
+        return {
+            left: {
+                x: canvas.width * MASK_LEFT.x,
+                y: canvas.height * MASK_LEFT.y,
+                w: canvas.width * MASK_LEFT.w,
+                h: canvas.height * MASK_LEFT.h
+            },
+            right: {
+                x: canvas.width * MASK_RIGHT.x,
+                y: canvas.height * MASK_RIGHT.y,
+                w: canvas.width * MASK_RIGHT.w,
+                h: canvas.height * MASK_RIGHT.h
+            }
         };
+    }
 
-        function getMasksPx() {
-            return {
-                left: { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h },
-                right: { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h }
-            };
-        }
+    function loadFile(file, state, maskPxFn) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            state.src = event.target.result;
+            state.img.src = event.target.result;
+            state.img.onload = () => {
+                const maskPx = maskPxFn();
+                let imgRatio = state.img.width / state.img.height;
+                let maskRatio = maskPx.w / maskPx.h;
 
-        function loadFile(file, state, maskPxFn) {
-            const reader = new FileReader();
-            reader.onload = function(event) { 
-                state.src = event.target.result;
-                state.img.src = event.target.result;
-                state.img.onload = () => {
-                    const maskPx = maskPxFn();
-                    let imgRatio = state.img.width / state.img.height;
-                    let maskRatio = maskPx.w / maskPx.h;
-                    
-                    if (imgRatio > maskRatio) {
-                        state.scale = maskPx.h / state.img.height;
-                    } else {
-                        state.scale = maskPx.w / state.img.width;
-                    }
-                    
-                    let renderW = state.img.width * state.scale;
-                    let renderH = state.img.height * state.scale;
-                    state.dx = (maskPx.w / 2) - (renderW / 2);
-                    state.dy = (maskPx.h / 2) - (renderH / 2);
-                    
-                    generatePreview(); 
+                if (imgRatio > maskRatio) {
+                    state.scale = maskPx.h / state.img.height;
+                } else {
+                    state.scale = maskPx.w / state.img.width;
                 }
-            }
-            if (file) reader.readAsDataURL(file);
-        }
 
-        leftFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], leftState, () => getMasksPx().left));
-        rightFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], rightState, () => getMasksPx().right));
-
-        function getCanvasCoords(event) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            let clientX = event.clientX;
-            let clientY = event.clientY;
-
-            if(event.touches && event.touches.length > 0) {
-                clientX = event.touches[0].clientX;
-                clientY = event.touches[0].clientY;
-            }
-
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY,
-                rawX: clientX,
-                rawY: clientY
-            };
-        }
-
-        function isCoordInMask(coords, maskPx) {
-            return coords.x >= maskPx.x && coords.x <= maskPx.x + maskPx.w &&
-                   coords.y >= maskPx.y && coords.y <= maskPx.y + maskPx.h;
-        }
-
-        let isDragging = false;
-        let activeState = null;
-        let startMouseX, startMouseY;
-        let startDx, startDy;
-        let dragHasMoved = false;
-        let initialPinchDistance = null;
-
-        function startInteraction(e) {
-            const coords = getCanvasCoords(e);
-            const masks = getMasksPx();
-
-            if (isCoordInMask(coords, masks.left)) activeState = leftState;
-            else if (isCoordInMask(coords, masks.right)) activeState = rightState;
-            else activeState = null;
-
-            startMouseX = coords.rawX;
-            startMouseY = coords.rawY;
-            
-            if (activeState && activeState.src) {
-                isDragging = true;
-                startDx = activeState.dx;
-                startDy = activeState.dy;
-            }
-            dragHasMoved = false;
-        }
-
-        function moveInteraction(e) {
-            if (!isDragging || !activeState) return;
-            e.preventDefault(); 
-            const coords = getCanvasCoords(e);
-            
-            let moveDiffX = Math.abs(coords.rawX - startMouseX);
-            let moveDiffY = Math.abs(coords.rawY - startMouseY);
-
-            if (moveDiffX > 3 || moveDiffY > 3) dragHasMoved = true;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-
-            activeState.dx = startDx + ((coords.rawX - startMouseX) * scaleX);
-            activeState.dy = startDy + ((coords.rawY - startMouseY) * scaleY);
-            generatePreview();
-        }
-
-        function endInteraction(e) {
-            if (!isDragging) {
-                if (!dragHasMoved) {
-                    const coords = getCanvasCoords(e.changedTouches ? e.changedTouches[0] : e);
-                    const masks = getMasksPx();
-                    if (isCoordInMask(coords, masks.left)) leftFilePicker.click();
-                    else if (isCoordInMask(coords, masks.right)) rightFilePicker.click();
-                }
-            }
-            isDragging = false;
-            activeState = null;
-        }
-
-        canvas.addEventListener('mousedown', startInteraction);
-        window.addEventListener('mousemove', moveInteraction, { passive: false });
-        window.addEventListener('mouseup', endInteraction);
-
-        canvas.addEventListener('touchstart', (e) => {
-            if(e.touches.length === 2) {
-                initialPinchDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            } else {
-                startInteraction(e);
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchmove', (e) => {
-            if(e.touches.length === 2 && initialPinchDistance && activeState) {
-                e.preventDefault();
-                const currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                
-                let pinchScale = currentDistance / initialPinchDistance;
-                activeState.scale *= pinchScale;
-                initialPinchDistance = currentDistance;
-                generatePreview();
-            } else {
-                moveInteraction(e);
-            }
-        }, { passive: false });
-
-        canvas.addEventListener('touchend', (e) => {
-            if(e.touches.length < 2) initialPinchDistance = null;
-            endInteraction(e);
-        });
-
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            const coords = getCanvasCoords(e);
-            const masks = getMasksPx();
-            let targetState = null;
-            let maskPx = null;
-
-            if (leftState.src && isCoordInMask(coords, masks.left)) { targetState = leftState; maskPx = masks.left; }
-            else if (rightState.src && isCoordInMask(coords, masks.right)) { targetState = rightState; maskPx = masks.right; }
-
-            if (!targetState) return;
-
-            const zoomSpeed = 0.05;
-            const oldScale = targetState.scale;
-            if (e.deltaY < 0) targetState.scale *= (1 + zoomSpeed); 
-            else targetState.scale *= (1 - zoomSpeed); 
-
-            let mouseXInMask = coords.x - maskPx.x;
-            let mouseYInMask = coords.y - maskPx.y;
-            
-            let imgX = (mouseXInMask - targetState.dx) / oldScale;
-            let imgY = (mouseYInMask - targetState.dy) / oldScale;
-
-            targetState.dx = mouseXInMask - (imgX * targetState.scale);
-            targetState.dy = mouseYInMask - (imgY * targetState.scale);
-
-            generatePreview();
-        }, { passive: false });
-
-        function generatePreview() {
-            if (!templateImg.complete) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const masks = getMasksPx();
-
-            function drawPlaceholder(ctx, maskPx, text) {
-                ctx.save();
-                ctx.font = "bold 50px 'Plus Jakarta Sans'";
-                ctx.fillStyle = "#cbd5e1";
-                ctx.textAlign = "center";
-                ctx.fillText(text, maskPx.x + maskPx.w / 2, maskPx.y + maskPx.h / 2);
-                ctx.restore();
-            }
-
-            function drawImageWithState(state, maskPx) {
-                ctx.save(); 
-                ctx.beginPath();
-                ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
-                ctx.clip(); 
-                
                 let renderW = state.img.width * state.scale;
                 let renderH = state.img.height * state.scale;
-                let finalX = maskPx.x + state.dx;
-                let finalY = maskPx.y + state.dy;
-                
-                ctx.drawImage(state.img, finalX, finalY, renderW, renderH);
-                ctx.restore(); 
+                state.dx = (maskPx.w / 2) - (renderW / 2);
+                state.dy = (maskPx.h / 2) - (renderH / 2);
+
+                generatePreview();
+                updateClearButtons();
+                statusBadge.innerText = "Image Loaded";
+            };
+        };
+        if (file) reader.readAsDataURL(file);
+    }
+
+    leftFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], leftState, () => getMasksPx().left));
+    rightFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], rightState, () => getMasksPx().right));
+
+    function getCanvasCoords(event) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX = event.clientX;
+        let clientY = event.clientY;
+
+        if (event.touches && event.touches.length > 0) {
+            clientX = event.touches[0].clientX;
+            clientY = event.touches[0].clientY;
+        }
+
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY,
+            rawX: clientX,
+            rawY: clientY
+        };
+    }
+
+    function isCoordInMask(coords, maskPx) {
+        return coords.x >= maskPx.x && coords.x <= maskPx.x + maskPx.w &&
+               coords.y >= maskPx.y && coords.y <= maskPx.y + maskPx.h;
+    }
+
+    let isDragging = false;
+    let activeState = null;
+    let startMouseX, startMouseY;
+    let startDx, startDy;
+    let dragHasMoved = false;
+    let initialPinchDistance = null;
+
+    function startInteraction(e) {
+        const coords = getCanvasCoords(e);
+        const masks = getMasksPx();
+
+        if (isCoordInMask(coords, masks.left)) activeState = leftState;
+        else if (isCoordInMask(coords, masks.right)) activeState = rightState;
+        else activeState = null;
+
+        startMouseX = coords.rawX;
+        startMouseY = coords.rawY;
+
+        if (activeState && activeState.src) {
+            isDragging = true;
+            startDx = activeState.dx;
+            startDy = activeState.dy;
+        }
+        dragHasMoved = false;
+    }
+
+    function moveInteraction(e) {
+        if (!isDragging || !activeState) return;
+        e.preventDefault();
+        const coords = getCanvasCoords(e);
+
+        let moveDiffX = Math.abs(coords.rawX - startMouseX);
+        let moveDiffY = Math.abs(coords.rawY - startMouseY);
+
+        if (moveDiffX > 3 || moveDiffY > 3) dragHasMoved = true;
+
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        activeState.dx = startDx + ((coords.rawX - startMouseX) * scaleX);
+        activeState.dy = startDy + ((coords.rawY - startMouseY) * scaleY);
+        generatePreview();
+    }
+
+    function endInteraction(e) {
+        if (!isDragging) {
+            if (!dragHasMoved) {
+                const coords = getCanvasCoords(e.changedTouches ? e.changedTouches[0] : e);
+                const masks = getMasksPx();
+                if (isCoordInMask(coords, masks.left)) leftFilePicker.click();
+                else if (isCoordInMask(coords, masks.right)) rightFilePicker.click();
             }
+        }
+        isDragging = false;
+        activeState = null;
+    }
 
-            if (leftState.src) drawImageWithState(leftState, masks.left);
-            else drawPlaceholder(ctx, masks.left, "Click to Upload Left");
+    canvas.addEventListener('mousedown', startInteraction);
+    window.addEventListener('mousemove', moveInteraction, { passive: false });
+    window.addEventListener('mouseup', endInteraction);
 
-            if (rightState.src) drawImageWithState(rightState, masks.right);
-            else drawPlaceholder(ctx, masks.right, "Click to Upload Right");
+    canvas.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+            initialPinchDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+        } else {
+            startInteraction(e);
+        }
+    }, { passive: false });
 
-            ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+    canvas.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 2 && initialPinchDistance && activeState) {
+            e.preventDefault();
+            const currentDistance = Math.hypot(
+                e.touches[0].clientX - e.touches[1].clientX,
+                e.touches[0].clientY - e.touches[1].clientY
+            );
+
+            let pinchScale = currentDistance / initialPinchDistance;
+            activeState.scale *= pinchScale;
+            initialPinchDistance = currentDistance;
+            generatePreview();
+        } else {
+            moveInteraction(e);
+        }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) initialPinchDistance = null;
+        endInteraction(e);
+    });
+
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const coords = getCanvasCoords(e);
+        const masks = getMasksPx();
+        let targetState = null;
+        let maskPx = null;
+
+        if (leftState.src && isCoordInMask(coords, masks.left)) {
+            targetState = leftState;
+            maskPx = masks.left;
+        } else if (rightState.src && isCoordInMask(coords, masks.right)) {
+            targetState = rightState;
+            maskPx = masks.right;
         }
 
-        function resetControls() { 
-    leftState.src = "";
-    leftState.img = new Image();
-    leftState.scale = 1;
-    leftState.dx = 0;
-    leftState.dy = 0;
+        if (!targetState) return;
 
-    rightState.src = "";
-    rightState.img = new Image();
-    rightState.scale = 1;
-    rightState.dx = 0;
-    rightState.dy = 0;
+        const zoomSpeed = 0.05;
+        const oldScale = targetState.scale;
+        if (e.deltaY < 0) targetState.scale *= (1 + zoomSpeed);
+        else targetState.scale *= (1 - zoomSpeed);
 
-    document.getElementById("status").innerText = "Ready";
-    document.getElementById("status").style.background = "#dcfce7";
-    document.getElementById("status").style.color = "#15803d";
+        let mouseXInMask = coords.x - maskPx.x;
+        let mouseYInMask = coords.y - maskPx.y;
 
-    generatePreview(); 
-}
-function clearLeftImage() {
-    leftState.src = "";
-    leftState.img = new Image();
-    leftState.scale = 1;
-    leftState.dx = 0;
-    leftState.dy = 0;
-    document.getElementById("status").innerText = "Left Cleared";
-    generatePreview();
-}
+        let imgX = (mouseXInMask - targetState.dx) / oldScale;
+        let imgY = (mouseYInMask - targetState.dy) / oldScale;
 
-function clearRightImage() {
-    rightState.src = "";
-    rightState.img = new Image();
-    rightState.scale = 1;
-    rightState.dx = 0;
-    rightState.dy = 0;
-    document.getElementById("status").innerText = "Right Cleared";
-    generatePreview();
-}
+        targetState.dx = mouseXInMask - (imgX * targetState.scale);
+        targetState.dy = mouseYInMask - (imgY * targetState.scale);
 
-function markReadyToPrint() {
-    const status = document.getElementById("status");
-    status.innerText = "Ready to Print";
-    status.style.background = "#dcfce7";
-    status.style.color = "#15803d";
-}
-        function downloadJPG() {
-            const link = document.createElement('a');
-            link.download = 'Print_HK721.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 0.95);
-            link.click();
+        generatePreview();
+    }, { passive: false });
+
+    function generatePreview() {
+        if (!templateImg.complete) return;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const masks = getMasksPx();
+
+        function drawPlaceholder(ctx, maskPx, text) {
+            ctx.save();
+            ctx.font = "bold 50px 'Plus Jakarta Sans'";
+            ctx.fillStyle = "#cbd5e1";
+            ctx.textAlign = "center";
+            ctx.fillText(text, maskPx.x + maskPx.w / 2, maskPx.y + maskPx.h / 2);
+            ctx.restore();
         }
 
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
-            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-            pdf.save("Print_HK721.pdf");
+        function drawImageWithState(state, maskPx) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
+            ctx.clip();
+
+            let renderW = state.img.width * state.scale;
+            let renderH = state.img.height * state.scale;
+            let finalX = maskPx.x + state.dx;
+            let finalY = maskPx.y + state.dy;
+
+            ctx.drawImage(state.img, finalX, finalY, renderW, renderH);
+            ctx.restore();
         }
-    </script>
+
+        if (leftState.src) drawImageWithState(leftState, masks.left);
+        else drawPlaceholder(ctx, masks.left, "Click to Upload Left");
+
+        if (rightState.src) drawImageWithState(rightState, masks.right);
+        else drawPlaceholder(ctx, masks.right, "Click to Upload Right");
+
+        ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+    }
+
+    function clearLeftImage() {
+        leftState.src = "";
+        leftState.img = new Image();
+        leftState.scale = 1;
+        leftState.dx = 0;
+        leftState.dy = 0;
+        statusBadge.innerText = "Left Cleared";
+        generatePreview();
+        updateClearButtons();
+    }
+
+    function clearRightImage() {
+        rightState.src = "";
+        rightState.img = new Image();
+        rightState.scale = 1;
+        rightState.dx = 0;
+        rightState.dy = 0;
+        statusBadge.innerText = "Right Cleared";
+        generatePreview();
+        updateClearButtons();
+    }
+
+    function resetControls() {
+        leftState.src = "";
+        leftState.img = new Image();
+        leftState.scale = 1;
+        leftState.dx = 0;
+        leftState.dy = 0;
+
+        rightState.src = "";
+        rightState.img = new Image();
+        rightState.scale = 1;
+        rightState.dx = 0;
+        rightState.dy = 0;
+
+        statusBadge.innerText = "Ready";
+        statusBadge.style.background = "#dcfce7";
+        statusBadge.style.color = "#15803d";
+
+        generatePreview();
+        updateClearButtons();
+    }
+
+    function printCanvasDirect() {
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        const printWindow = window.open('', '_blank');
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Preview</title>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        background: white;
+                    }
+                    img {
+                        width: 100%;
+                        max-width: 1123px;
+                        height: auto;
+                        object-fit: contain;
+                    }
+                    @media print {
+                        body {
+                            margin: 0;
+                        }
+                        img {
+                            width: 100%;
+                            height: auto;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <img src="${dataUrl}" />
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        window.onafterprint = function() {
+                            window.close();
+                        };
+                    };
+                <\/script>
+            </body>
+            </html>
+        `);
+
+        printWindow.document.close();
+        statusBadge.innerText = "Print Ready";
+    }
+
+    function downloadJPG() {
+        const link = document.createElement('a');
+        link.download = 'Shree Ram Mobile.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+    }
+
+    function downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
+        pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+        pdf.save("Shree Ram Mobile.pdf");
+    }
+</script>
 </body>
 </html>
