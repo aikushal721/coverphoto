@@ -2,229 +2,283 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Image Placement Editor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HK721 Studio | Shree Ram Mobile</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        /* પેજનું સામાન્ય સ્ટાઈલિંગ */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 20px;
+        :root {
+            --bg-body: #f8f9fa;
+            --sidebar-bg: #ffffff;
+            --primary: #4f46e5;
+            --text-dark: #1a1d23;
+            --text-muted: #64748b;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            --border: #e2e8f0;
         }
 
-        h2 {
-            color: #333;
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; padding: 0; background-color: var(--bg-body);
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* ફોટો અપલોડ બટનની ડિઝાઈન */
-        .upload-container {
-            margin-bottom: 20px;
+        /* --- SIDEBAR (Ref jaisa sleek) --- */
+        .sidebar {
+            width: 260px; background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px;
         }
-
-        input[type="file"] {
-            padding: 10px;
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            cursor: pointer;
+        .logo { font-size: 20px; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; margin-bottom: 40px; }
+        .menu-item { 
+            padding: 12px 16px; border-radius: 12px; color: var(--text-muted); 
+            text-decoration: none; font-weight: 500; display: flex; align-items: center; gap: 12px;
+            margin-bottom: 8px; transition: 0.3s;
         }
+        .menu-item.active { background: #f0f0ff; color: var(--primary); }
+        .sidebar-footer { margin-top: auto; font-size: 12px; color: var(--text-muted); text-align: center; }
 
-        /* મુખ્ય બોક્સ જ્યાં ફોટો દેખાશે */
-        .canvas-box {
-            width: 320px;  /* તમે અહી બોક્સની પહોળાઈ બદલી શકો છો */
-            height: 500px; /* તમે અહી બોક્સની ઉંચાઈ બદલી શકો છો */
-            border: 2px dashed #4CAF50;
-            border-radius: 10px;
-            background-color: #ffffff;
-            overflow: hidden; /* આનાથી ફોટો બોક્સની બહાર નહિ જાય */
+        /* --- MAIN CONTENT --- */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+
+        /* Topbar */
+        .topbar {
+            padding: 20px 40px; background: rgba(248, 249, 250, 0.8);
+            backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 10;
+        }
+        .topbar h1 { font-size: 20px; font-weight: 700; margin: 0; color: var(--text-dark); }
+        .topbar-right { display: flex; align-items: center; gap: 20px; }
+        .insta-link { font-size: 22px; color: var(--text-dark); transition: 0.3s; }
+        .insta-link:hover { color: #e1306c; transform: translateY(-2px); }
+
+        /* Dashboard Canvas Area */
+        .workspace { padding: 0 40px 40px 40px; display: flex; flex-direction: column; align-items: center; }
+        
+        .canvas-card {
+            background: #ffffff; padding: 30px; border-radius: 24px;
+            box-shadow: var(--card-shadow); border: 1px solid var(--border);
+            width: 100%; max-width: 1000px; display: flex; flex-direction: column; align-items: center;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: grab;
-            touch-action: none; /* મોબાઈલમાં પેજને સ્ક્રોલ થતું અટકાવશે */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .canvas-box:active {
-            cursor: grabbing;
+        .canvas-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .status-badge { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        /* Canvas Fitting Logic (No cutting off) */
+        .canvas-wrapper {
+            width: 100%; background: #f1f5f9; border-radius: 16px; padding: 20px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            box-sizing: border-box; overflow: hidden;
+        }
+        canvas {
+            max-width: 100%; height: auto !important; /* Scale to fit width */
+            max-height: 65vh; /* Scale to fit height */
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 4px; background: white;
         }
 
-        /* અંદરનો ફોટો */
-        #editableImage {
-            display: none; /* ફોટો અપલોડ થાય ત્યાં સુધી છુપાવેલો રહેશે */
-            position: absolute;
-            transform-origin: center center;
-            pointer-events: none; /* જેથી માઉસના બધા કમાન્ડ મુખ્ય બોક્સ પર જ લાગુ પડે */
+        /* Bottom Actions */
+        .action-bar { display: flex; gap: 12px; margin-top: 25px; }
+        .btn {
+            padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px;
+            cursor: pointer; border: none; display: flex; align-items: center; gap: 8px; transition: 0.2s;
         }
+        .btn-reset { background: #fee2e2; color: #ef4444; }
+        .btn-reset:hover { background: #fecaca; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
-        .instructions {
-            margin-top: 15px;
-            color: #666;
-            font-size: 14px;
-            text-align: center;
+        /* Footer minimal (Ref jaisa) */
+        .footer-minimal {
+            padding: 24px 40px; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted);
+        }
+        .footer-links { display: flex; gap: 20px; }
+        .footer-links a { color: var(--text-muted); text-decoration: none; }
+
+        @media (max-width: 900px) {
+            .sidebar { display: none; }
+            .topbar { padding: 20px; }
         }
     </style>
 </head>
 <body>
 
-    <h2>Image Setup Studio</h2>
+    <aside class="sidebar">
+        <div class="logo"><i class="fa-solid fa-wand-magic-sparkles"></i> HK721 Studio</div>
+        <nav>
+            <a href="#" class="menu-item active"><i class="fa-solid fa-border-all"></i> Dashboard</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-print"></i> Recent Prints</a>
+            <a href="#" class="menu-item"><i class="fa-solid fa-gear"></i> Settings</a>
+        </nav>
+        <div class="sidebar-footer">© 2026 Kushal Hirpara</div>
+    </aside>
 
-    <div class="upload-container">
-        <input type="file" id="imageUploader" accept="image/*">
-    </div>
+    <div class="main-content">
+        
+        <header class="topbar">
+            <h1>Shree Ram Mobile & Accessories</h1>
+            <div class="topbar-right">
+                <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" class="insta-link">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+            </div>
+        </header>
 
-    <div class="canvas-box" id="canvasBox">
-        <img id="editableImage" src="" alt="Uploaded Image">
-    </div>
+        <div class="workspace">
+            <div class="canvas-card">
+                <div class="canvas-header">
+                    <span style="font-weight: 600; font-size: 14px; color: var(--text-muted);">Live Preview (A4 Layout)</span>
+                    <span class="status-badge" id="status">Ready</span>
+                </div>
 
-    <div class="instructions">
-        <p><b>Desktop:</b> માઉસ વ્હીલ ફેરવીને Zoom કરો અને માઉસ દબાવી રાખીને ખસેડો.</p>
-        <p><b>Mobile:</b> 2 આંગળીથી Pinch-Zoom કરો અને 1 આંગળીથી ખસેડો.</p>
+                <div class="canvas-wrapper" id="canvasDropZone">
+                    <canvas id="myCanvas"></canvas>
+                    <input type="file" id="leftFilePicker" accept="image/*" style="display:none;">
+                    <input type="file" id="rightFilePicker" accept="image/*" style="display:none;">
+                </div>
+
+                <div class="action-bar">
+                    <button class="btn btn-reset" onclick="resetControls()">
+                        <i class="fa-solid fa-rotate-left"></i> Reset
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadJPG()">
+                        <i class="fa-solid fa-image"></i> Export JPG
+                    </button>
+                    <button class="btn btn-primary" style="background: #111827;" onclick="downloadPDF()">
+                        <i class="fa-solid fa-file-pdf"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer-minimal">
+            <div>© 2026 Graphy. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms</a>
+                <a href="#">Support</a>
+            </div>
+        </footer>
     </div>
 
     <script>
-        const imageUploader = document.getElementById('imageUploader');
-        const editableImage = document.getElementById('editableImage');
-        const canvasBox = document.getElementById('canvasBox');
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasContainer = document.getElementById('canvasDropZone');
+        const leftFilePicker = document.getElementById('leftFilePicker');
+        const rightFilePicker = document.getElementById('rightFilePicker');
 
-        // ઈમેજ સેટ કરવા માટેના વેરીએબલ્સ
-        let scale = 1;
-        let translateX = 0;
-        let translateY = 0;
-        
-        let isDragging = false;
-        let startX, startY;
-        let initialPinchDistance = null;
+        let templateImg = new Image();
+        let leftImg = new Image();
+        let rightImg = new Image();
 
-        // 1. ફોટો અપલોડ થાય ત્યારે
-        imageUploader.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const imageUrl = URL.createObjectURL(file);
-                
-                // જૂની ઈમેજ લોડ થાય એટલે તેની સાઈઝ રિસેટ કરવી
-                editableImage.onload = function() {
-                    scale = 1; // ડીફોલ્ટ ઝૂમ
-                    
-                    // જો ઈમેજ બહુ મોટી હોય તો બોક્સમાં ફિટ કરવા માટે બેઝિક સ્કેલિંગ
-                    const boxRatio = canvasBox.clientWidth / canvasBox.clientHeight;
-                    const imgRatio = this.naturalWidth / this.naturalHeight;
-                    
-                    if(this.naturalWidth > canvasBox.clientWidth || this.naturalHeight > canvasBox.clientHeight){
-                         if(imgRatio > boxRatio) {
-                             scale = canvasBox.clientHeight / this.naturalHeight;
-                         } else {
-                             scale = canvasBox.clientWidth / this.naturalWidth;
-                         }
-                    }
+        // Template coordinates (Fits within borders)
+        const MASK_LEFT = { x: 0.12, y: 0.03, w: 0.35, h: 0.94 };
+        const MASK_RIGHT = { x: 0.55, y: 0.03, w: 0.35, h: 0.94 };
 
-                    translateX = 0;
-                    translateY = 0;
-                    updateTransform();
-                    editableImage.style.display = 'block';
-                };
-                
-                editableImage.src = imageUrl;
+        templateImg.src = 'template.png'; 
+        templateImg.onload = function() {
+            canvas.width = templateImg.width || 3508; 
+            canvas.height = templateImg.height || 2480;
+            generatePreview();
+        };
+
+        function loadFile(file, imgObj) {
+            const reader = new FileReader();
+            reader.onload = function(event) { 
+                imgObj.src = event.target.result;
+                imgObj.onload = generatePreview; 
             }
-        });
-
-        // ઈમેજને ખસેડવા અને ઝૂમ કરવા માટેનું મુખ્ય ફંક્શન
-        function updateTransform() {
-            editableImage.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
-            editableImage.style.left = '50%';
-            editableImage.style.top = '50%';
+            if (file) reader.readAsDataURL(file);
         }
 
-        // 2. Desktop: માઉસ વ્હીલથી Zoom
-        canvasBox.addEventListener('wheel', (e) => {
-            if(editableImage.style.display === 'none') return;
-            e.preventDefault();
-            
-            // વ્હીલ ઉપર-નીચે કરવાથી ઝૂમ વધશે/ઘટશે
-            const zoomSpeed = 0.05;
-            if (e.deltaY < 0) {
-                scale += zoomSpeed; // Zoom In
-            } else {
-                scale -= zoomSpeed; // Zoom Out
+        leftFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], leftImg));
+        rightFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], rightImg));
+
+        function getCanvasCoords(event) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (event.clientX - rect.left) * scaleX,
+                y: (event.clientY - rect.top) * scaleY
+            };
+        }
+
+        function isCoordInMask(coords, maskPx) {
+            return coords.x >= maskPx.x && coords.x <= maskPx.x + maskPx.w &&
+                   coords.y >= maskPx.y && coords.y <= maskPx.y + maskPx.h;
+        }
+
+        canvasContainer.addEventListener('click', function(event) {
+            const coords = getCanvasCoords(event);
+            const leftMaskPx = { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h };
+            const rightMaskPx = { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h };
+
+            if (isCoordInMask(coords, leftMaskPx)) leftFilePicker.click();
+            else if (isCoordInMask(coords, rightMaskPx)) rightFilePicker.click();
+        });
+
+        function generatePreview() {
+            if (!templateImg.complete) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const leftMaskPx = { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h };
+            const rightMaskPx = { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h };
+
+            function drawPlaceholder(ctx, maskPx, text) {
+                ctx.save();
+                ctx.font = "bold 50px 'Plus Jakarta Sans'";
+                ctx.fillStyle = "#cbd5e1";
+                ctx.textAlign = "center";
+                ctx.fillText(text, maskPx.x + maskPx.w / 2, maskPx.y + maskPx.h / 2);
+                ctx.restore();
             }
-            
-            scale = Math.max(0.1, Math.min(scale, 10)); // લિમિટ સેટ કરી (બહુ નાનું કે મોટું ન થાય)
-            updateTransform();
-        });
 
-        // 3. Desktop: માઉસથી ખસેડવું (Drag)
-        canvasBox.addEventListener('mousedown', (e) => {
-            if(editableImage.style.display === 'none') return;
-            isDragging = true;
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-        });
+            if (leftImg.src) drawClippedAdjustedImage(leftImg, leftMaskPx);
+            else drawPlaceholder(ctx, leftMaskPx, "Click to Upload Left");
 
-        window.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            updateTransform();
-        });
+            if (rightImg.src) drawClippedAdjustedImage(rightImg, rightMaskPx);
+            else drawPlaceholder(ctx, rightMaskPx, "Click to Upload Right");
 
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
-        });
+            ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+        }
 
-        // 4. Mobile: ટચ કંટ્રોલ (Pinch Zoom અને Drag)
-        canvasBox.addEventListener('touchstart', (e) => {
-            if(editableImage.style.display === 'none') return;
-            
-            if (e.touches.length === 2) {
-                // બે આંગળી વચ્ચેનું અંતર
-                initialPinchDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-            } else if (e.touches.length === 1) {
-                // એક આંગળીથી ડ્રેગ
-                isDragging = true;
-                startX = e.touches[0].clientX - translateX;
-                startY = e.touches[0].clientY - translateY;
-            }
-        });
+        function drawClippedAdjustedImage(img, maskPx) {
+            ctx.save(); ctx.beginPath();
+            ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
+            ctx.clip(); 
+            let imgRatio = img.width / img.height;
+            let maskRatio = maskPx.w / maskPx.h;
+            let renderW, renderH;
+            if (imgRatio > maskRatio) { renderH = maskPx.h; renderW = renderH * imgRatio; }
+            else { renderW = maskPx.w; renderH = renderW / imgRatio; }
+            let finalX = maskPx.x + (maskPx.w / 2) - (renderW / 2);
+            let finalY = maskPx.y + (maskPx.h / 2) - (renderH / 2);
+            ctx.drawImage(img, finalX, finalY, renderW, renderH);
+            ctx.restore(); 
+        }
 
-        canvasBox.addEventListener('touchmove', (e) => {
-            if(editableImage.style.display === 'none') return;
-            e.preventDefault(); // ડિફોલ્ટ પેજ સ્ક્રોલિંગ અટકાવવા
-            
-            if (e.touches.length === 2 && initialPinchDistance !== null) {
-                const currentDistance = Math.hypot(
-                    e.touches[0].clientX - e.touches[1].clientX,
-                    e.touches[0].clientY - e.touches[1].clientY
-                );
-                
-                const distanceDiff = currentDistance - initialPinchDistance;
-                scale += distanceDiff * 0.005; // ઝૂમ સ્પીડ
-                scale = Math.max(0.1, Math.min(scale, 10));
-                
-                initialPinchDistance = currentDistance;
-                updateTransform();
-            } else if (e.touches.length === 1 && isDragging) {
-                translateX = e.touches[0].clientX - startX;
-                translateY = e.touches[0].clientY - startY;
-                updateTransform();
-            }
-        }, { passive: false }); // passive: false એ preventDefault માટે જરૂરી છે
+        function resetControls() { leftImg.src = ""; rightImg.src = ""; generatePreview(); }
 
-        canvasBox.addEventListener('touchend', (e) => {
-            if (e.touches.length < 2) {
-                initialPinchDistance = null;
-            }
-            if (e.touches.length === 0) {
-                isDragging = false;
-            }
-        });
+        function downloadJPG() {
+            const link = document.createElement('a');
+            link.download = 'Print_HK721.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
+            pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
+            pdf.save("Print_HK721.pdf");
+        }
     </script>
 </body>
 </html>
