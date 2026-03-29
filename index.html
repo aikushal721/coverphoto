@@ -25,7 +25,7 @@
             display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* --- SIDEBAR (Ref jaisa sleek) --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 260px; background: var(--sidebar-bg);
             border-right: 1px solid var(--border);
@@ -67,16 +67,21 @@
         .canvas-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .status-badge { background: #dcfce7; color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 
-        /* Canvas Fitting Logic (No cutting off) */
+        /* Canvas Fitting Logic */
         .canvas-wrapper {
             width: 100%; background: #f1f5f9; border-radius: 16px; padding: 20px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
             box-sizing: border-box; overflow: hidden;
         }
         canvas {
-            max-width: 100%; height: auto !important; /* Scale to fit width */
-            max-height: 65vh; /* Scale to fit height */
+            max-width: 100%; height: auto !important; 
+            max-height: 65vh; 
             box-shadow: 0 20px 40px rgba(0,0,0,0.1); border-radius: 4px; background: white;
+            cursor: pointer;
+            touch-action: none; /* ઝૂમ કરતી વખતે પેજ સ્ક્રોલ ના થાય તે માટે */
+        }
+        canvas:active {
+            cursor: grabbing;
         }
 
         /* Bottom Actions */
@@ -90,7 +95,7 @@
         .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3); }
         .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 
-        /* Footer minimal (Ref jaisa) */
+        /* Footer minimal */
         .footer-minimal {
             padding: 24px 40px; border-top: 1px solid var(--border);
             display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted);
@@ -167,15 +172,15 @@
     <script>
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
-        const canvasContainer = document.getElementById('canvasDropZone');
         const leftFilePicker = document.getElementById('leftFilePicker');
         const rightFilePicker = document.getElementById('rightFilePicker');
 
         let templateImg = new Image();
-        let leftImg = new Image();
-        let rightImg = new Image();
 
-        // Template coordinates (Fits within borders)
+        // ઈમેજના ઝૂમ અને ડ્રેગ ડેટા સ્ટોર કરવા માટેના ઓબ્જેક્ટ્સ
+        const leftState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
+        const rightState = { img: new Image(), src: "", scale: 1, dx: 0, dy: 0 };
+
         const MASK_LEFT = { x: 0.12, y: 0.03, w: 0.35, h: 0.94 };
         const MASK_RIGHT = { x: 0.55, y: 0.03, w: 0.35, h: 0.94 };
 
@@ -186,25 +191,64 @@
             generatePreview();
         };
 
-        function loadFile(file, imgObj) {
+        function getMasksPx() {
+            return {
+                left: { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h },
+                right: { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h }
+            };
+        }
+
+        // નવી ઈમેજ લોડ થાય ત્યારે તેને બરાબર વચ્ચે ગોઠવવી
+        function loadFile(file, state, maskPxFn) {
             const reader = new FileReader();
             reader.onload = function(event) { 
-                imgObj.src = event.target.result;
-                imgObj.onload = generatePreview; 
+                state.src = event.target.result;
+                state.img.src = event.target.result;
+                state.img.onload = () => {
+                    const maskPx = maskPxFn();
+                    let imgRatio = state.img.width / state.img.height;
+                    let maskRatio = maskPx.w / maskPx.h;
+                    
+                    // શરુઆતમાં ફોટો પૂરા બોક્સમાં આવી જાય તે માટે સ્કેલ સેટ કરવો
+                    if (imgRatio > maskRatio) {
+                        state.scale = maskPx.h / state.img.height;
+                    } else {
+                        state.scale = maskPx.w / state.img.width;
+                    }
+                    
+                    // ફોટાને સેન્ટરમાં લાવવો
+                    let renderW = state.img.width * state.scale;
+                    let renderH = state.img.height * state.scale;
+                    state.dx = (maskPx.w / 2) - (renderW / 2);
+                    state.dy = (maskPx.h / 2) - (renderH / 2);
+                    
+                    generatePreview(); 
+                }
             }
             if (file) reader.readAsDataURL(file);
         }
 
-        leftFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], leftImg));
-        rightFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], rightImg));
+        leftFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], leftState, () => getMasksPx().left));
+        rightFilePicker.addEventListener('change', (e) => loadFile(e.target.files[0], rightState, () => getMasksPx().right));
 
         function getCanvasCoords(event) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
             const scaleY = canvas.height / rect.height;
+            let clientX = event.clientX;
+            let clientY = event.clientY;
+
+            // જો મોબાઈલ ટચ હોય તો 
+            if(event.touches && event.touches.length > 0) {
+                clientX = event.touches[0].clientX;
+                clientY = event.touches[0].clientY;
+            }
+
             return {
-                x: (event.clientX - rect.left) * scaleX,
-                y: (event.clientY - rect.top) * scaleY
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY,
+                rawX: clientX,
+                rawY: clientY
             };
         }
 
@@ -213,14 +257,136 @@
                    coords.y >= maskPx.y && coords.y <= maskPx.y + maskPx.h;
         }
 
-        canvasContainer.addEventListener('click', function(event) {
-            const coords = getCanvasCoords(event);
-            const leftMaskPx = { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h };
-            const rightMaskPx = { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h };
+        // --- ડ્રેગ (Drag) અને ક્લિક (Click) નું લોજીક ---
+        let isDragging = false;
+        let activeState = null;
+        let startMouseX, startMouseY;
+        let startDx, startDy;
+        let dragHasMoved = false;
+        let initialPinchDistance = null;
 
-            if (isCoordInMask(coords, leftMaskPx)) leftFilePicker.click();
-            else if (isCoordInMask(coords, rightMaskPx)) rightFilePicker.click();
+        function startInteraction(e) {
+            const coords = getCanvasCoords(e);
+            const masks = getMasksPx();
+
+            if (isCoordInMask(coords, masks.left)) activeState = leftState;
+            else if (isCoordInMask(coords, masks.right)) activeState = rightState;
+            else activeState = null;
+
+            startMouseX = coords.rawX;
+            startMouseY = coords.rawY;
+            
+            if (activeState && activeState.src) {
+                isDragging = true;
+                startDx = activeState.dx;
+                startDy = activeState.dy;
+            }
+            dragHasMoved = false;
+        }
+
+        function moveInteraction(e) {
+            if (!isDragging || !activeState) return;
+            e.preventDefault(); // પેજ સ્ક્રોલ થતું અટકાવવા
+            const coords = getCanvasCoords(e);
+            
+            let moveDiffX = Math.abs(coords.rawX - startMouseX);
+            let moveDiffY = Math.abs(coords.rawY - startMouseY);
+
+            // જો થોડુંક જ હલે તો એને ક્લિક જ ગણવું, ડ્રેગ નહિ 
+            if (moveDiffX > 3 || moveDiffY > 3) dragHasMoved = true;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            activeState.dx = startDx + ((coords.rawX - startMouseX) * scaleX);
+            activeState.dy = startDy + ((coords.rawY - startMouseY) * scaleY);
+            generatePreview();
+        }
+
+        function endInteraction(e) {
+            if (!isDragging) {
+                // જો ડ્રેગ ન થયું હોય (એટલે કે માત્ર ક્લિક થયું હોય)
+                if (!dragHasMoved) {
+                    const coords = getCanvasCoords(e.changedTouches ? e.changedTouches[0] : e);
+                    const masks = getMasksPx();
+                    if (isCoordInMask(coords, masks.left)) leftFilePicker.click();
+                    else if (isCoordInMask(coords, masks.right)) rightFilePicker.click();
+                }
+            }
+            isDragging = false;
+            activeState = null;
+        }
+
+        // માઉસ ઈવેન્ટ્સ
+        canvas.addEventListener('mousedown', startInteraction);
+        window.addEventListener('mousemove', moveInteraction, { passive: false });
+        window.addEventListener('mouseup', endInteraction);
+
+        // ટચ (મોબાઈલ) ઈવેન્ટ્સ
+        canvas.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 2) {
+                initialPinchDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            } else {
+                startInteraction(e);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if(e.touches.length === 2 && initialPinchDistance && activeState) {
+                e.preventDefault();
+                const currentDistance = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                
+                let pinchScale = currentDistance / initialPinchDistance;
+                activeState.scale *= pinchScale;
+                initialPinchDistance = currentDistance;
+                generatePreview();
+            } else {
+                moveInteraction(e);
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', (e) => {
+            if(e.touches.length < 2) initialPinchDistance = null;
+            endInteraction(e);
         });
+
+        // --- ઝૂમ (Zoom) માઉસ વ્હીલ થી ---
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const coords = getCanvasCoords(e);
+            const masks = getMasksPx();
+            let targetState = null;
+            let maskPx = null;
+
+            if (leftState.src && isCoordInMask(coords, masks.left)) { targetState = leftState; maskPx = masks.left; }
+            else if (rightState.src && isCoordInMask(coords, masks.right)) { targetState = rightState; maskPx = masks.right; }
+
+            if (!targetState) return;
+
+            const zoomSpeed = 0.05;
+            const oldScale = targetState.scale;
+            if (e.deltaY < 0) targetState.scale *= (1 + zoomSpeed); // Zoom In
+            else targetState.scale *= (1 - zoomSpeed); // Zoom Out
+
+            // માઉસ પોઈન્ટરની જગ્યાએ જ ઝૂમ થાય તે માટે ગણતરી
+            let mouseXInMask = coords.x - maskPx.x;
+            let mouseYInMask = coords.y - maskPx.y;
+            
+            let imgX = (mouseXInMask - targetState.dx) / oldScale;
+            let imgY = (mouseYInMask - targetState.dy) / oldScale;
+
+            targetState.dx = mouseXInMask - (imgX * targetState.scale);
+            targetState.dy = mouseYInMask - (imgY * targetState.scale);
+
+            generatePreview();
+        }, { passive: false });
 
         function generatePreview() {
             if (!templateImg.complete) return;
@@ -228,8 +394,7 @@
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            const leftMaskPx = { x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h };
-            const rightMaskPx = { x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h };
+            const masks = getMasksPx();
 
             function drawPlaceholder(ctx, maskPx, text) {
                 ctx.save();
@@ -240,31 +405,36 @@
                 ctx.restore();
             }
 
-            if (leftImg.src) drawClippedAdjustedImage(leftImg, leftMaskPx);
-            else drawPlaceholder(ctx, leftMaskPx, "Click to Upload Left");
+            // અપડેટ કરેલું ડ્રોઇંગ ફંક્શન જે ઝૂમ અને ડ્રેગને સપોર્ટ કરે છે
+            function drawImageWithState(state, maskPx) {
+                ctx.save(); 
+                ctx.beginPath();
+                ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
+                ctx.clip(); 
+                
+                let renderW = state.img.width * state.scale;
+                let renderH = state.img.height * state.scale;
+                let finalX = maskPx.x + state.dx;
+                let finalY = maskPx.y + state.dy;
+                
+                ctx.drawImage(state.img, finalX, finalY, renderW, renderH);
+                ctx.restore(); 
+            }
 
-            if (rightImg.src) drawClippedAdjustedImage(rightImg, rightMaskPx);
-            else drawPlaceholder(ctx, rightMaskPx, "Click to Upload Right");
+            if (leftState.src) drawImageWithState(leftState, masks.left);
+            else drawPlaceholder(ctx, masks.left, "Click to Upload Left");
+
+            if (rightState.src) drawImageWithState(rightState, masks.right);
+            else drawPlaceholder(ctx, masks.right, "Click to Upload Right");
 
             ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
         }
 
-        function drawClippedAdjustedImage(img, maskPx) {
-            ctx.save(); ctx.beginPath();
-            ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
-            ctx.clip(); 
-            let imgRatio = img.width / img.height;
-            let maskRatio = maskPx.w / maskPx.h;
-            let renderW, renderH;
-            if (imgRatio > maskRatio) { renderH = maskPx.h; renderW = renderH * imgRatio; }
-            else { renderW = maskPx.w; renderH = renderW / imgRatio; }
-            let finalX = maskPx.x + (maskPx.w / 2) - (renderW / 2);
-            let finalY = maskPx.y + (maskPx.h / 2) - (renderH / 2);
-            ctx.drawImage(img, finalX, finalY, renderW, renderH);
-            ctx.restore(); 
+        function resetControls() { 
+            leftState.src = ""; leftState.scale = 1; leftState.dx = 0; leftState.dy = 0;
+            rightState.src = ""; rightState.scale = 1; rightState.dx = 0; rightState.dy = 0;
+            generatePreview(); 
         }
-
-        function resetControls() { leftImg.src = ""; rightImg.src = ""; generatePreview(); }
 
         function downloadJPG() {
             const link = document.createElement('a');
