@@ -3,30 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Cover Print App - Personal</title>
+    <title>Mobile Cover Print App - HK721</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; text-align: center; }
         
-        /* Main container for content (controls + canvas) */
-        .content-wrapper { flex: 1; padding: 20px; padding-bottom: 80px; /* footer offset */ }
+        .content-wrapper { flex: 1; padding: 20px; padding-bottom: 100px; }
 
-        .controls { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin-left: auto; margin-right: auto;}
+        .controls { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 900px; margin-left: auto; margin-right: auto;}
         h2 { margin-top: 0; color: #333; }
         
         .upload-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
-        .upload-group { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; flex: 1; min-width: 280px; }
-        .upload-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
-        input[type="file"] { width: 100%; border: 1px solid #ccc; padding: 5px; border-radius: 4px; }
+        .upload-group { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; flex: 1; min-width: 300px; text-align: left; }
+        .upload-group label.main-label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; text-align: center;}
+        input[type="file"] { width: 100%; border: 1px solid #ccc; padding: 5px; border-radius: 4px; box-sizing: border-box; }
 
-        /* Positioning Controls Style */
-        .control-sliders { margin-top: 10px; text-align: left; font-size: 14px;}
-        .control-sliders label { font-weight: normal; color: #666; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;}
+        .control-sliders { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;}
+        .control-sliders label { font-weight: normal; color: #666; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px;}
         .control-sliders input[type="range"] { width: 65%; cursor: pointer; }
 
         .action-buttons { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        .btn { padding: 12px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; transition: background 0.2s;}
+        .btn { padding: 12px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; transition: background 0.2s; font-size: 16px;}
         .btn:hover { background: #0056b3; }
         .btn-success { background: #28a745; }
         .btn-success:hover { background: #218838; }
@@ -37,14 +35,15 @@
         #status { color: #666; font-size: 14px; margin-bottom: 15px; font-style: italic;}
 
         /* Footer Style */
-        footer { background-color: #333; color: white; padding: 15px 30px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); z-index: 1000;}
-        .footer-left { font-size: 14px; }
-        .footer-right a { color: white; font-size: 24px; text-decoration: none; transition: color 0.2s; }
-        .footer-right a:hover { color: #e1306c; /* Instagram pink on hover */ }
+        footer { background-color: #333; color: white; padding: 20px 30px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); z-index: 1000;}
+        .footer-left { font-size: 16px; font-weight: 500; }
+        .footer-right a { color: white; font-size: 28px; text-decoration: none; transition: transform 0.2s, color 0.2s; display: inline-block; }
+        .footer-right a:hover { color: #e1306c; transform: scale(1.1); }
 
-        @media (max-width: 600px) {
+        @media (max-width: 650px) {
             .upload-row { flex-direction: column; }
-            footer { flex-direction: column; gap: 10px; text-align: center; padding: 10px;}
+            footer { flex-direction: column; gap: 10px; text-align: center; padding: 15px;}
+            .content-wrapper { padding-bottom: 120px; }
         }
     </style>
 </head>
@@ -53,11 +52,11 @@
     <div class="content-wrapper">
         <div class="controls">
             <h2>Cover Print Setup (HK721)</h2>
-            <div id="status">Waiting for Template (template.png)...</div>
+            <div id="status">Waiting for Template...</div>
 
             <div class="upload-row">
                 <div class="upload-group">
-                    <label>1. Upload Left Image:</label>
+                    <label class="main-label">1. Upload Left Image:</label>
                     <input type="file" id="leftUpload" accept="image/*">
                     <div class="control-sliders">
                         <label>Zoom: <input type="range" id="leftZoom" min="0.1" max="3" step="0.01" value="1"></label>
@@ -67,7 +66,7 @@
                 </div>
                 
                 <div class="upload-group">
-                    <label>2. Upload Right Image:</label>
+                    <label class="main-label">2. Upload Right Image:</label>
                     <input type="file" id="rightUpload" accept="image/*">
                     <div class="control-sliders">
                         <label>Zoom: <input type="range" id="rightZoom" min="0.1" max="3" step="0.01" value="1"></label>
@@ -92,7 +91,7 @@
             ©2026 HK721 | Kushal Hirpara
         </div>
         <div class="footer-right">
-            <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" title="Follow on Instagram">
+            <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" title="Follow Kushal on Instagram">
                 <i class="fab fa-instagram"></i>
             </a>
         </div>
@@ -102,53 +101,45 @@
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Main Image Objects
         let templateImg = new Image();
         let leftImg = new Image();
         let rightImg = new Image();
 
-        // State variables for positioning (xOffset and yOffset are multipliers of mask size)
         let leftState = { zoom: 1, xOffset: 0, yOffset: 0 };
         let rightState = { zoom: 1, xOffset: 0, yOffset: 0 };
 
-        // Define exact mask areas relative to template (decimal percentage)
-        // Adjust these if they don't perfectly line up with your black border
+        // Updated Coordinates: White space removed, full fit inside borders
         const MASK_LEFT = { x: 0.12, y: 0.03, w: 0.35, h: 0.94 };
         const MASK_RIGHT = { x: 0.55, y: 0.03, w: 0.35, h: 0.94 };
 
-        // 1. Load Template Automaticaly
-        // **********************************************************
-        // ZAROORI: Ensure 'template.png' is in the root of your Github repo
+        // Load Template Automaticaly from GitHub
         templateImg.src = 'template.png'; 
-        // **********************************************************
 
         templateImg.onload = function() {
-            // Set canvas resolution high to match A4/Template res
-            canvas.width = templateImg.width || 3508; // Default to A4 300dpi width if not loaded
-            canvas.height = templateImg.height || 2480; // Default height
+            canvas.width = templateImg.width || 3508; 
+            canvas.height = templateImg.height || 2480;
 
             const status = document.getElementById('status');
             if(templateImg.width > 0) {
-                status.innerHTML = "Template Loaded: " + canvas.width + "x" + canvas.height + "px. Upload images and use sliders to set.";
+                status.innerHTML = "Template Loaded. Use sliders to set your photos.";
                 status.style.color = "green";
-                generatePreview(); // Initial draw with template only
+                generatePreview(); 
             } else {
                 status.innerHTML = "Error: 'template.png' not found in repo root.";
                 status.style.color = "red";
             }
         };
+        
         templateImg.onerror = function() {
-             document.getElementById('status').innerHTML = "Error: Could not load 'template.png'. Make sure it's uploaded.";
+             document.getElementById('status').innerHTML = "Error: Could not load 'template.png'.";
              document.getElementById('status').style.color = "red";
         }
 
-        // Image upload listeners
         document.getElementById('leftUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], leftImg); });
         document.getElementById('rightUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], rightImg); });
 
-        // Slider listeners to trigger immediate redraw
-        const sliders = ['leftZoom', 'leftX', 'leftY', 'rightZoom', 'rightX', 'rightY'];
-        sliders.forEach(id => {
+        const sliderIds = ['leftZoom', 'leftX', 'leftY', 'rightZoom', 'rightX', 'rightY'];
+        sliderIds.forEach(id => {
             document.getElementById(id).addEventListener('input', updateStateFromSliders);
         });
 
@@ -156,10 +147,9 @@
             const reader = new FileReader();
             reader.onload = function(event) { 
                 imgObj.src = event.target.result;
-                // Once user image loads, reset its specific sliders to default
                 if(imgObj === leftImg) resetSpecificControls('left');
                 if(imgObj === rightImg) resetSpecificControls('right');
-                imgObj.onload = generatePreview; // Draw once loaded
+                imgObj.onload = generatePreview; 
             }
             if (file) reader.readAsDataURL(file);
         }
@@ -173,7 +163,7 @@
             rightState.xOffset = parseFloat(document.getElementById('rightX').value);
             rightState.yOffset = parseFloat(document.getElementById('rightY').value);
 
-            generatePreview(); // Redraw with new values
+            generatePreview();
         }
 
         function resetControls() {
@@ -191,15 +181,12 @@
         }
 
         function generatePreview() {
-            // Safe checking template
             if (!templateImg.complete || templateImg.naturalWidth === 0) return;
 
-            // Clear canvas and draw base white layer
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Calculate actual pixel coordinates for masks
             const leftMaskPx = { 
                 x: canvas.width * MASK_LEFT.x, 
                 y: canvas.height * MASK_LEFT.y, 
@@ -213,102 +200,80 @@
                 h: canvas.height * MASK_RIGHT.h 
             };
 
-            // 1. Draw Left Image (Bottom layer, clipped)
             if (leftImg.src && leftImg.complete) {
                 drawClippedAdjustedImage(leftImg, leftMaskPx, leftState);
             }
 
-            // 2. Draw Right Image (Bottom layer, clipped)
             if (rightImg.src && rightImg.complete) {
                 drawClippedAdjustedImage(rightImg, rightMaskPx, rightState);
             }
 
-            // 3. Draw Template PNG on TOP (Mask/Border layer)
+            // Draw template on top to keep borders neat
             ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
         }
 
-        // Helper function to handle complex positioning/zooming within a clipped mask area
         function drawClippedAdjustedImage(img, maskPx, state) {
-            ctx.save(); // Save state before clipping
-            
-            // Create Clipping Path (the black border area)
+            ctx.save(); 
             ctx.beginPath();
             ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
-            ctx.clip(); // Restrict all future drawing to this rectangle
+            ctx.clip(); 
 
-            // Calculate base filling dimensions (cover mode, keeping aspect ratio)
             let imgRatio = img.width / img.height;
             let maskRatio = maskPx.w / maskPx.h;
             let renderW, renderH;
 
             if (imgRatio > maskRatio) {
-                // Image is wider than mask -> match height
                 renderH = maskPx.h * state.zoom;
                 renderW = renderH * imgRatio;
             } else {
-                // Image is taller than mask -> match width
                 renderW = maskPx.w * state.zoom;
                 renderH = renderW / imgRatio;
             }
 
-            // Calculate final position: Center image in mask + apply sliders offsets
-            // Sliders move by a percentage of the mask's width/height for intuitive control
             let finalX = maskPx.x + (maskPx.w / 2) - (renderW / 2) + (state.xOffset * maskPx.w);
             let finalY = maskPx.y + (maskPx.h / 2) - (renderH / 2) + (state.yOffset * maskPx.h);
 
-            // Draw image adjusted
             ctx.drawImage(img, finalX, finalY, renderW, renderH);
-
-            ctx.restore(); // Restore state (remove clipping)
+            ctx.restore(); 
         }
 
         function downloadJPG() {
-            // Simple visual check
             if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
-            
             const status = document.getElementById('status');
-            status.innerHTML = "Generating high-res JPG...";
+            status.innerHTML = "Generating JPG...";
             
-            // Give browser a moment to update DOM
             setTimeout(() => {
                 const link = document.createElement('a');
-                link.download = 'HK721_Mobile_Covers_' + new Date().toISOString().slice(0,10) + '.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.95); // High quality JPEG
+                link.download = 'HK721_Covers_' + new Date().toISOString().slice(0,10) + '.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
                 link.click();
-                status.innerHTML = "JPG Downloaded. Ready for printing.";
+                status.innerHTML = "JPG Downloaded.";
                 status.style.color = "green";
             }, 100);
         }
 
         function downloadPDF() {
             if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
-            
             window.jspdf = window.jspdf || {};
             const { jsPDF } = window.jspdf;
-            
             const status = document.getElementById('status');
             status.innerHTML = "Generating A4 PDF...";
 
             setTimeout(() => {
-                // Create A4 PDF (Landscape matches your template layout)
                 const pdf = new jsPDF({
                     orientation: 'landscape',
                     unit: 'px',
                     format: 'a4'
                 });
 
-                // Get high-res JPEG data from canvas
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                
-                // Get PDF dimensions to fit image perfectly
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
 
-                // Add image to PDF, stretching to cover full A4 page
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save("HK721_Ready_To_Print_" + new Date().toISOString().slice(0,10) + ".pdf");
+                pdf.save("HK721_ReadyToPrint_" + new Date().toISOString().slice(0,10) + ".pdf");
                 
-                status.innerHTML = "PDF Downloaded (Standard A4 Landscape).";
+                status.innerHTML = "PDF Downloaded (A4 Landscape).";
                 status.style.color = "green";
             }, 100);
         }
