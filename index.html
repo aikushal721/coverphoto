@@ -3,128 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Cover Print App</title>
+    <title>Mobile Cover Print App - Personal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; text-align: center; }
-        .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .btn { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold;}
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; text-align: center; }
+        
+        /* Main container for content (controls + canvas) */
+        .content-wrapper { flex: 1; padding: 20px; padding-bottom: 80px; /* footer offset */ }
+
+        .controls { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); max-width: 800px; margin-left: auto; margin-right: auto;}
+        h2 { margin-top: 0; color: #333; }
+        
+        .upload-row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+        .upload-group { background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px solid #eee; flex: 1; min-width: 280px; }
+        .upload-group label { display: block; font-weight: bold; margin-bottom: 8px; color: #555; }
+        input[type="file"] { width: 100%; border: 1px solid #ccc; padding: 5px; border-radius: 4px; }
+
+        /* Positioning Controls Style */
+        .control-sliders { margin-top: 10px; text-align: left; font-size: 14px;}
+        .control-sliders label { font-weight: normal; color: #666; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;}
+        .control-sliders input[type="range"] { width: 65%; cursor: pointer; }
+
+        .action-buttons { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn { padding: 12px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; transition: background 0.2s;}
         .btn:hover { background: #0056b3; }
-        canvas { max-width: 100%; height: auto; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: white; margin-top: 10px;}
-        .upload-group { margin-bottom: 15px; background: #eee; padding: 10px; border-radius: 5px; }
-        #status { color: green; font-weight: bold; margin-bottom: 10px;}
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .btn-danger { background: #dc3545; }
+        .btn-danger:hover { background: #c82333; }
+
+        canvas { max-width: 100%; height: auto; border: 2px solid #333; box-shadow: 0 10px 25px rgba(0,0,0,0.2); background: white; margin-top: 20px; border-radius: 4px;}
+        #status { color: #666; font-size: 14px; margin-bottom: 15px; font-style: italic;}
+
+        /* Footer Style */
+        footer { background-color: #333; color: white; padding: 15px 30px; position: fixed; bottom: 0; width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); z-index: 1000;}
+        .footer-left { font-size: 14px; }
+        .footer-right a { color: white; font-size: 24px; text-decoration: none; transition: color 0.2s; }
+        .footer-right a:hover { color: #e1306c; /* Instagram pink on hover */ }
+
+        @media (max-width: 600px) {
+            .upload-row { flex-direction: column; }
+            footer { flex-direction: column; gap: 10px; text-align: center; padding: 10px;}
+        }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <h2>Cover Print Setup (Personal Use)</h2>
-        <div id="status">Template pre-loaded from repository</div>
+    <div class="content-wrapper">
+        <div class="controls">
+            <h2>Cover Print Setup (HK721)</h2>
+            <div id="status">Waiting for Template (template.png)...</div>
 
-        <div class="upload-group">
-            <label><b>1. Upload Left Image:</b> </label>
-            <input type="file" id="leftUpload" accept="image/*">
-        </div>
-        
-        <div class="upload-group">
-            <label><b>2. Upload Right Image:</b> </label>
-            <input type="file" id="rightUpload" accept="image/*">
+            <div class="upload-row">
+                <div class="upload-group">
+                    <label>1. Upload Left Image:</label>
+                    <input type="file" id="leftUpload" accept="image/*">
+                    <div class="control-sliders">
+                        <label>Zoom: <input type="range" id="leftZoom" min="0.1" max="3" step="0.01" value="1"></label>
+                        <label>Move X: <input type="range" id="leftX" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Move Y: <input type="range" id="leftY" min="-1" max="1" step="0.01" value="0"></label>
+                    </div>
+                </div>
+                
+                <div class="upload-group">
+                    <label>2. Upload Right Image:</label>
+                    <input type="file" id="rightUpload" accept="image/*">
+                    <div class="control-sliders">
+                        <label>Zoom: <input type="range" id="rightZoom" min="0.1" max="3" step="0.01" value="1"></label>
+                        <label>Move X: <input type="range" id="rightX" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Move Y: <input type="range" id="rightY" min="-1" max="1" step="0.01" value="0"></label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-danger" onclick="resetControls()">Reset Positioning</button>
+                <button class="btn btn-success" onclick="downloadJPG()">Download JPG</button>
+                <button class="btn" onclick="downloadPDF()">Download PDF (A4)</button>
+            </div>
         </div>
 
-        <button class="btn" onclick="generatePreview()">1. Update Preview</button>
-        <button class="btn" onclick="downloadJPG()">2. Download JPG</button>
-        <button class="btn" onclick="downloadPDF()">3. Download PDF (Landscape)</button>
+        <canvas id="myCanvas"></canvas>
     </div>
 
-    <canvas id="myCanvas"></canvas>
+    <footer>
+        <div class="footer-left">
+            ©2026 HK721 | Kushal Hirpara
+        </div>
+        <div class="footer-right">
+            <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" title="Follow on Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </footer>
 
     <script>
         const canvas = document.getElementById('myCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Setup variables
+        // Main Image Objects
         let templateImg = new Image();
         let leftImg = new Image();
         let rightImg = new Image();
 
-        // 1. ZAROORI CHANGE: Automating Template Loading
+        // State variables for positioning (xOffset and yOffset are multipliers of mask size)
+        let leftState = { zoom: 1, xOffset: 0, yOffset: 0 };
+        let rightState = { zoom: 1, xOffset: 0, yOffset: 0 };
+
+        // Define exact mask areas relative to template (decimal percentage)
+        // Adjust these if they don't perfectly line up with your black border
+        const MASK_LEFT = { x: 0.12, y: 0.032, w: 0.35, h: 0.935 };
+        const MASK_RIGHT = { x: 0.55, y: 0.032, w: 0.35, h: 0.935 };
+
+        // 1. Load Template Automaticaly
         // **********************************************************
-        // YAHAN AAPKO APNE TEMPLATE IMAGE KA EXACT NAAM LIKHNA HAI 
-        // (Jo aapne GitHub me upload kiya hai, e.g., 'template.png')
+        // ZAROORI: Ensure 'template.png' is in the root of your Github repo
         templateImg.src = 'template.png'; 
         // **********************************************************
 
-        // Template load hone ke baad kuch initial setups (like setting canvas size) karein
         templateImg.onload = function() {
-            canvas.width = templateImg.width; 
-            canvas.height = templateImg.height;
-            document.getElementById('status').innerHTML = "Template loaded: " + canvas.width + "x" + canvas.height + " px. Ready!";
-            // Starting clear
-            ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(templateImg, 0, 0); 
-        };
+            // Set canvas resolution high to match A4/Template res
+            canvas.width = templateImg.width || 3508; // Default to A4 300dpi width if not loaded
+            canvas.height = templateImg.height || 2480; // Default height
 
-        // Images upload handlers (for user photos)
+            const status = document.getElementById('status');
+            if(templateImg.width > 0) {
+                status.innerHTML = "Template Loaded: " + canvas.width + "x" + canvas.height + "px. Upload images and use sliders to set.";
+                status.style.color = "green";
+                generatePreview(); // Initial draw with template only
+            } else {
+                status.innerHTML = "Error: 'template.png' not found in repo root.";
+                status.style.color = "red";
+            }
+        };
+        templateImg.onerror = function() {
+             document.getElementById('status').innerHTML = "Error: Could not load 'template.png'. Make sure it's uploaded.";
+             document.getElementById('status').style.color = "red";
+        }
+
+        // Image upload listeners
         document.getElementById('leftUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], leftImg); });
         document.getElementById('rightUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], rightImg); });
 
+        // Slider listeners to trigger immediate redraw
+        const sliders = ['leftZoom', 'leftX', 'leftY', 'rightZoom', 'rightX', 'rightY'];
+        sliders.forEach(id => {
+            document.getElementById(id).addEventListener('input', updateStateFromSliders);
+        });
+
         function loadImg(file, imgObj) {
             const reader = new FileReader();
-            reader.onload = function(event) { imgObj.src = event.target.result; }
+            reader.onload = function(event) { 
+                imgObj.src = event.target.result;
+                // Once user image loads, reset its specific sliders to default
+                if(imgObj === leftImg) resetSpecificControls('left');
+                if(imgObj === rightImg) resetSpecificControls('right');
+                imgObj.onload = generatePreview; // Draw once loaded
+            }
             if (file) reader.readAsDataURL(file);
         }
 
-        function generatePreview() {
-            // Safe checking
-            if (!templateImg.complete || templateImg.naturalWidth === 0) {
-                alert("Template image not found in repository. Make sure 'template.png' is uploaded to GitHub repo root folder.");
-                return;
-            }
+        function updateStateFromSliders() {
+            leftState.zoom = parseFloat(document.getElementById('leftZoom').value);
+            leftState.xOffset = parseFloat(document.getElementById('leftX').value);
+            leftState.yOffset = parseFloat(document.getElementById('leftY').value);
 
-            // Canvas clear & base layer
+            rightState.zoom = parseFloat(document.getElementById('rightZoom').value);
+            rightState.xOffset = parseFloat(document.getElementById('rightX').value);
+            rightState.yOffset = parseFloat(document.getElementById('rightY').value);
+
+            generatePreview(); // Redraw with new values
+        }
+
+        function resetControls() {
+            resetSpecificControls('left');
+            resetSpecificControls('right');
+            generatePreview();
+        }
+
+        function resetSpecificControls(side) {
+            document.getElementById(side + 'Zoom').value = 1;
+            document.getElementById(side + 'X').value = 0;
+            document.getElementById(side + 'Y').value = 0;
+            if(side === 'left') leftState = { zoom: 1, xOffset: 0, yOffset: 0 };
+            if(side === 'right') rightState = { zoom: 1, xOffset: 0, yOffset: 0 };
+        }
+
+        function generatePreview() {
+            // Safe checking template
+            if (!templateImg.complete || templateImg.naturalWidth === 0) return;
+
+            // Clear canvas and draw base white layer
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = "white";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // X, Y, Width, Height (Adjust these decimals slightly if needed for fit)
-            let leftBox = { x: canvas.width * 0.12, y: canvas.height * 0.03, w: canvas.width * 0.35, h: canvas.height * 0.94 };
-            let rightBox = { x: canvas.width * 0.55, y: canvas.height * 0.03, w: canvas.width * 0.35, h: canvas.height * 0.94 };
+            // Calculate actual pixel coordinates for masks
+            const leftMaskPx = { 
+                x: canvas.width * MASK_LEFT.x, 
+                y: canvas.height * MASK_LEFT.y, 
+                w: canvas.width * MASK_LEFT.w, 
+                h: canvas.height * MASK_LEFT.h 
+            };
+            const rightMaskPx = { 
+                x: canvas.width * MASK_RIGHT.x, 
+                y: canvas.height * MASK_RIGHT.y, 
+                w: canvas.width * MASK_RIGHT.w, 
+                h: canvas.height * MASK_RIGHT.h 
+            };
 
-            // 1. Draw Left Image (Bottom layer)
-            if (leftImg.src) ctx.drawImage(leftImg, leftBox.x, leftBox.y, leftBox.w, leftBox.h);
+            // 1. Draw Left Image (Bottom layer, clipped)
+            if (leftImg.src && leftImg.complete) {
+                drawClippedAdjustedImage(leftImg, leftMaskPx, leftState);
+            }
 
-            // 2. Draw Right Image (Bottom layer)
-            if (rightImg.src) ctx.drawImage(rightImg, rightBox.x, rightBox.y, rightBox.w, rightBox.h);
+            // 2. Draw Right Image (Bottom layer, clipped)
+            if (rightImg.src && rightImg.complete) {
+                drawClippedAdjustedImage(rightImg, rightMaskPx, rightState);
+            }
 
-            // 3. Draw Template PNG on TOP (Mask layer)
+            // 3. Draw Template PNG on TOP (Mask/Border layer)
             ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
         }
 
+        // Helper function to handle complex positioning/zooming within a clipped mask area
+        function drawClippedAdjustedImage(img, maskPx, state) {
+            ctx.save(); // Save state before clipping
+            
+            // Create Clipping Path (the black border area)
+            ctx.beginPath();
+            ctx.rect(maskPx.x, maskPx.y, maskPx.w, maskPx.h);
+            ctx.clip(); // Restrict all future drawing to this rectangle
+
+            // Calculate base filling dimensions (cover mode, keeping aspect ratio)
+            let imgRatio = img.width / img.height;
+            let maskRatio = maskPx.w / maskPx.h;
+            let renderW, renderH;
+
+            if (imgRatio > maskRatio) {
+                // Image is wider than mask -> match height
+                renderH = maskPx.h * state.zoom;
+                renderW = renderH * imgRatio;
+            } else {
+                // Image is taller than mask -> match width
+                renderW = maskPx.w * state.zoom;
+                renderH = renderW / imgRatio;
+            }
+
+            // Calculate final position: Center image in mask + apply sliders offsets
+            // Sliders move by a percentage of the mask's width/height for intuitive control
+            let finalX = maskPx.x + (maskPx.w / 2) - (renderW / 2) + (state.xOffset * maskPx.w);
+            let finalY = maskPx.y + (maskPx.h / 2) - (renderH / 2) + (state.yOffset * maskPx.h);
+
+            // Draw image adjusted
+            ctx.drawImage(img, finalX, finalY, renderW, renderH);
+
+            ctx.restore(); // Restore state (remove clipping)
+        }
+
         function downloadJPG() {
-            const link = document.createElement('a');
-            link.download = 'Ready_To_Print_Covers.jpg';
-            link.href = canvas.toDataURL('image/jpeg', 1.0);
-            link.click();
+            // Simple visual check
+            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
+            
+            const status = document.getElementById('status');
+            status.innerHTML = "Generating high-res JPG...";
+            
+            // Give browser a moment to update DOM
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = 'HK721_Mobile_Covers_' + new Date().toISOString().slice(0,10) + '.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.95); // High quality JPEG
+                link.click();
+                status.innerHTML = "JPG Downloaded. Ready for printing.";
+                status.style.color = "green";
+            }, 100);
         }
 
         function downloadPDF() {
+            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
+            
             window.jspdf = window.jspdf || {};
             const { jsPDF } = window.jspdf;
             
-            // Landscape A4 PDF
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'px',
-                format: 'a4'
-            });
+            const status = document.getElementById('status');
+            status.innerHTML = "Generating A4 PDF...";
 
-            const imgData = canvas.toDataURL('image/jpeg', 1.0);
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            setTimeout(() => {
+                // Create A4 PDF (Landscape matches your template layout)
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'px',
+                    format: 'a4'
+                });
 
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            pdf.save("Ready_To_Print_Covers.pdf");
+                // Get high-res JPEG data from canvas
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                
+                // Get PDF dimensions to fit image perfectly
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+
+                // Add image to PDF, stretching to cover full A4 page
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save("HK721_Ready_To_Print_" + new Date().toISOString().slice(0,10) + ".pdf");
+                
+                status.innerHTML = "PDF Downloaded (Standard A4 Landscape).";
+                status.style.color = "green";
+            }, 100);
         }
     </script>
 </body>
