@@ -3,100 +3,289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Cover Print App - HK721</title>
+    <title>Print Studio | HK721</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 0; display: flex; flex-direction: column; min-height: 100vh; }
-        
-        /* Flex container se content aur footer alag rahenge */
-        .content-wrapper { flex: 1; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        :root {
+            --bg-color: #f3f4f6; 
+            --sidebar-bg: #111827; 
+            --card-bg: #ffffff;
+            --primary: #4f46e5; 
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
 
-        .controls { background: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); width: 100%; max-width: 750px; text-align: center; }
-        h2 { margin-top: 0; color: #333; font-size: 22px; margin-bottom: 10px;}
-        
-        .upload-row { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px; }
-        .upload-group { background: #f9f9f9; padding: 12px; border-radius: 8px; border: 1px solid #eee; flex: 1; min-width: 250px; text-align: left; }
-        .upload-group label.main-label { display: block; font-weight: bold; margin-bottom: 6px; color: #444; text-align: center; font-size: 14px;}
-        input[type="file"] { width: 100%; border: 1px solid #ccc; padding: 4px; border-radius: 4px; box-sizing: border-box; font-size: 13px;}
+        body { 
+            font-family: 'Inter', sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden; 
+        }
 
-        .control-sliders { margin-top: 10px; border-top: 1px solid #ddd; padding-top: 8px;}
-        .control-sliders label { font-weight: normal; color: #666; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px;}
-        .control-sliders input[type="range"] { width: 65%; cursor: pointer; }
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        .sidebar-header {
+            padding: 24px 20px;
+            font-size: 20px;
+            font-weight: 700;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sidebar-header i { color: var(--primary); font-size: 24px;}
+        .sidebar-menu {
+            padding: 20px 10px;
+            flex: 1;
+        }
+        .menu-item {
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            background: rgba(255,255,255,0.1); 
+        }
+        .sidebar-footer {
+            padding: 20px;
+            font-size: 13px;
+            color: #9ca3af;
+            border-top: 1px solid #374151;
+            text-align: center;
+        }
 
-        .action-buttons { margin-top: 15px; border-top: 1px solid #ddd; padding-top: 15px; }
-        .btn { padding: 8px 16px; margin: 4px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; transition: background 0.2s; font-size: 14px;}
-        .btn:hover { background: #0056b3; }
-        .btn-success { background: #28a745; }
-        .btn-success:hover { background: #218838; }
-        .btn-danger { background: #dc3545; }
-        .btn-danger:hover { background: #c82333; }
+        /* --- MAIN CONTENT --- */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
 
-        /* Canvas visual screen pe chhota dikhega (max 700px width) par download original size mein hi hoga */
-        canvas { max-width: 100%; width: 700px; height: auto; border: 1px solid #ccc; box-shadow: 0 8px 20px rgba(0,0,0,0.15); background: white; margin-top: 10px; border-radius: 4px;}
-        #status { color: #666; font-size: 13px; margin-bottom: 12px; font-style: italic;}
+        /* Topbar */
+        .topbar {
+            height: 70px;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .topbar-title { font-size: 18px; font-weight: 600; color: var(--text-main); }
+        .topbar-actions a {
+            color: var(--text-main);
+            font-size: 24px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .topbar-actions a:hover { color: #e1306c; }
 
-        /* Footer Style - FIXED POSITION HATA DIYA HAI, ab overlap nahi karega */
-        footer { background-color: #333; color: white; padding: 15px 30px; width: 100%; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-        .footer-left { font-size: 14px; font-weight: 500; }
-        .footer-right a { color: white; font-size: 24px; text-decoration: none; transition: transform 0.2s, color 0.2s; display: inline-block; }
-        .footer-right a:hover { color: #e1306c; transform: scale(1.1); }
+        /* Dashboard Grid */
+        .dashboard-content {
+            padding: 30px;
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
 
-        @media (max-width: 600px) {
-            .upload-row { flex-direction: column; }
-            footer { flex-direction: column; gap: 8px; text-align: center; padding: 12px;}
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            padding: 24px;
+        }
+
+        /* Columns */
+        .controls-section { flex: 0 0 380px; }
+        .preview-section { flex: 1; display: flex; flex-direction: column; align-items: center; }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        #status { font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 12px; background: #fef3c7; color: #d97706; }
+
+        /* Upload Groups */
+        .upload-group {
+            margin-bottom: 24px;
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+        }
+        .upload-group label.main-label { display: block; font-weight: 600; margin-bottom: 10px; color: var(--text-main); font-size: 14px;}
+        input[type="file"] { width: 100%; font-size: 13px; color: var(--text-muted); }
+        input[type="file"]::file-selector-button {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border-color);
+            background: white; color: var(--text-main); cursor: pointer; font-weight: 500;
+            margin-right: 10px; transition: background 0.2s;
+        }
+        input[type="file"]::file-selector-button:hover { background: #f3f4f6; }
+
+        /* Sliders */
+        .control-sliders { margin-top: 15px; }
+        .control-sliders label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--text-muted); font-weight: 500;}
+        .control-sliders input[type="range"] { width: 70%; accent-color: var(--primary); }
+
+        /* Buttons */
+        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .btn {
+            padding: 10px 16px; border: none; border-radius: 8px; font-weight: 600; font-size: 14px;
+            cursor: pointer; transition: all 0.2s; display: flex; justify-content: center; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: var(--success-hover); }
+        .btn-danger { background: white; color: var(--danger); border: 1px solid #fca5a5; }
+        .btn-danger:hover { background: #fef2f2; }
+
+        /* Canvas */
+        .canvas-container {
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            body { flex-direction: column; overflow: auto;}
+            .sidebar { width: 100%; height: auto; flex-direction: row; align-items: center; justify-content: space-between; padding: 10px 20px; box-sizing: border-box;}
+            .sidebar-header { border: none; padding: 0;}
+            .sidebar-menu, .sidebar-footer { display: none; }
+            .dashboard-content { flex-direction: column; }
+            .controls-section { flex: none; width: 100%; box-sizing: border-box; }
         }
     </style>
 </head>
 <body>
 
-    <div class="content-wrapper">
-        <div class="controls">
-            <h2>Cover Print Setup (HK721)</h2>
-            <div id="status">Waiting for Template...</div>
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-layer-group"></i> HK721 Studio
+        </div>
+        <div class="sidebar-menu">
+            <a href="#" class="menu-item"><i class="fa-solid fa-border-all"></i> Cover Setup</a>
+        </div>
+        <div class="sidebar-footer">
+            © 2026 Kushal Hirpara<br>All rights reserved.
+        </div>
+    </aside>
 
-            <div class="upload-row">
+    <div class="main-wrapper">
+        
+        <header class="topbar">
+            <div class="topbar-title">Workspace - A4 Print Layout</div>
+            <div class="topbar-actions">
+                <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" title="Follow on Instagram">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            
+            <div class="controls-section card">
+                <div class="section-title">
+                    Configuration
+                    <span id="status">Loading Template...</span>
+                </div>
+
                 <div class="upload-group">
-                    <label class="main-label">1. Upload Left Image:</label>
+                    <label class="main-label">1. Left Cover Image</label>
                     <input type="file" id="leftUpload" accept="image/*">
                     <div class="control-sliders">
-                        <label>Zoom: <input type="range" id="leftZoom" min="0.1" max="3" step="0.01" value="1"></label>
-                        <label>Move X: <input type="range" id="leftX" min="-1" max="1" step="0.01" value="0"></label>
-                        <label>Move Y: <input type="range" id="leftY" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Zoom <input type="range" id="leftZoom" min="0.1" max="3" step="0.01" value="1"></label>
+                        <label>Move X <input type="range" id="leftX" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Move Y <input type="range" id="leftY" min="-1" max="1" step="0.01" value="0"></label>
                     </div>
                 </div>
                 
                 <div class="upload-group">
-                    <label class="main-label">2. Upload Right Image:</label>
+                    <label class="main-label">2. Right Cover Image</label>
                     <input type="file" id="rightUpload" accept="image/*">
                     <div class="control-sliders">
-                        <label>Zoom: <input type="range" id="rightZoom" min="0.1" max="3" step="0.01" value="1"></label>
-                        <label>Move X: <input type="range" id="rightX" min="-1" max="1" step="0.01" value="0"></label>
-                        <label>Move Y: <input type="range" id="rightY" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Zoom <input type="range" id="rightZoom" min="0.1" max="3" step="0.01" value="1"></label>
+                        <label>Move X <input type="range" id="rightX" min="-1" max="1" step="0.01" value="0"></label>
+                        <label>Move Y <input type="range" id="rightY" min="-1" max="1" step="0.01" value="0"></label>
                     </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-danger" onclick="resetControls()">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Positioning
+                    </button>
+                    <button class="btn btn-success" onclick="downloadJPG()">
+                        <i class="fa-solid fa-image"></i> Export as JPG
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadPDF()">
+                        <i class="fa-solid fa-file-pdf"></i> Export as PDF
+                    </button>
                 </div>
             </div>
 
-            <div class="action-buttons">
-                <button class="btn btn-danger" onclick="resetControls()">Reset Positioning</button>
-                <button class="btn btn-success" onclick="downloadJPG()">Download JPG</button>
-                <button class="btn" onclick="downloadPDF()">Download PDF (A4)</button>
+            <div class="preview-section card">
+                <div class="section-title">
+                    Live Print Preview
+                </div>
+                <div class="canvas-container">
+                    <canvas id="myCanvas"></canvas>
+                </div>
             </div>
-        </div>
 
-        <canvas id="myCanvas"></canvas>
+        </div>
     </div>
-
-    <footer>
-        <div class="footer-left">
-            ©2026 HK721 | Kushal Hirpara
-        </div>
-        <div class="footer-right">
-            <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" title="Follow Kushal on Instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
-        </div>
-    </footer>
 
     <script>
         const canvas = document.getElementById('myCanvas');
@@ -112,7 +301,6 @@
         const MASK_LEFT = { x: 0.09, y: 0.02, w: 0.40, h: 0.96 };
         const MASK_RIGHT = { x: 0.51, y: 0.02, w: 0.40, h: 0.96 };
 
-        // Load Template Automaticaly from GitHub
         templateImg.src = 'template.png'; 
 
         templateImg.onload = function() {
@@ -121,18 +309,22 @@
 
             const status = document.getElementById('status');
             if(templateImg.width > 0) {
-                status.innerHTML = "Template Loaded. Use sliders to set your photos.";
-                status.style.color = "green";
+                status.innerHTML = "Ready";
+                status.style.background = "#d1fae5";
+                status.style.color = "#065f46";
                 generatePreview(); 
             } else {
-                status.innerHTML = "Error: 'template.png' not found in repo root.";
-                status.style.color = "red";
+                status.innerHTML = "Template Error";
+                status.style.background = "#fee2e2";
+                status.style.color = "#991b1b";
             }
         };
         
         templateImg.onerror = function() {
-             document.getElementById('status').innerHTML = "Error: Could not load 'template.png'.";
-             document.getElementById('status').style.color = "red";
+             const status = document.getElementById('status');
+             status.innerHTML = "Template Not Found";
+             status.style.background = "#fee2e2";
+             status.style.color = "#991b1b";
         }
 
         document.getElementById('leftUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], leftImg); });
@@ -188,25 +380,16 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const leftMaskPx = { 
-                x: canvas.width * MASK_LEFT.x, 
-                y: canvas.height * MASK_LEFT.y, 
-                w: canvas.width * MASK_LEFT.w, 
-                h: canvas.height * MASK_LEFT.h 
+                x: canvas.width * MASK_LEFT.x, y: canvas.height * MASK_LEFT.y, 
+                w: canvas.width * MASK_LEFT.w, h: canvas.height * MASK_LEFT.h 
             };
             const rightMaskPx = { 
-                x: canvas.width * MASK_RIGHT.x, 
-                y: canvas.height * MASK_RIGHT.y, 
-                w: canvas.width * MASK_RIGHT.w, 
-                h: canvas.height * MASK_RIGHT.h 
+                x: canvas.width * MASK_RIGHT.x, y: canvas.height * MASK_RIGHT.y, 
+                w: canvas.width * MASK_RIGHT.w, h: canvas.height * MASK_RIGHT.h 
             };
 
-            if (leftImg.src && leftImg.complete) {
-                drawClippedAdjustedImage(leftImg, leftMaskPx, leftState);
-            }
-
-            if (rightImg.src && rightImg.complete) {
-                drawClippedAdjustedImage(rightImg, rightMaskPx, rightState);
-            }
+            if (leftImg.src && leftImg.complete) drawClippedAdjustedImage(leftImg, leftMaskPx, leftState);
+            if (rightImg.src && rightImg.complete) drawClippedAdjustedImage(rightImg, rightMaskPx, rightState);
 
             ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
         }
@@ -222,11 +405,9 @@
             let renderW, renderH;
 
             if (imgRatio > maskRatio) {
-                renderH = maskPx.h * state.zoom;
-                renderW = renderH * imgRatio;
+                renderH = maskPx.h * state.zoom; renderW = renderH * imgRatio;
             } else {
-                renderW = maskPx.w * state.zoom;
-                renderH = renderW / imgRatio;
+                renderW = maskPx.w * state.zoom; renderH = renderW / imgRatio;
             }
 
             let finalX = maskPx.x + (maskPx.w / 2) - (renderW / 2) + (state.xOffset * maskPx.w);
@@ -237,43 +418,35 @@
         }
 
         function downloadJPG() {
-            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
+            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one image."); return; }
             const status = document.getElementById('status');
-            status.innerHTML = "Generating JPG...";
+            status.innerHTML = "Exporting JPG...";
             
             setTimeout(() => {
                 const link = document.createElement('a');
-                link.download = 'HK721_Covers_' + new Date().toISOString().slice(0,10) + '.jpg';
+                link.download = 'HK721_Print_' + new Date().toISOString().slice(0,10) + '.jpg';
                 link.href = canvas.toDataURL('image/jpeg', 0.95);
                 link.click();
-                status.innerHTML = "JPG Downloaded.";
-                status.style.color = "green";
+                status.innerHTML = "Ready";
             }, 100);
         }
 
         function downloadPDF() {
-            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one cover image."); return; }
+            if (!leftImg.src && !rightImg.src) { alert("Please upload at least one image."); return; }
             window.jspdf = window.jspdf || {};
             const { jsPDF } = window.jspdf;
             const status = document.getElementById('status');
-            status.innerHTML = "Generating A4 PDF...";
+            status.innerHTML = "Exporting PDF...";
 
             setTimeout(() => {
-                const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'px',
-                    format: 'a4'
-                });
-
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'px', format: 'a4' });
                 const imgData = canvas.toDataURL('image/jpeg', 0.95);
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = pdf.internal.pageSize.getHeight();
 
                 pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save("HK721_ReadyToPrint_" + new Date().toISOString().slice(0,10) + ".pdf");
-                
-                status.innerHTML = "PDF Downloaded (A4 Landscape).";
-                status.style.color = "green";
+                pdf.save("HK721_Print_" + new Date().toISOString().slice(0,10) + ".pdf");
+                status.innerHTML = "Ready";
             }, 100);
         }
     </script>
