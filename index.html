@@ -45,11 +45,23 @@
 
         /* Topbar */
         .topbar {
-            padding: 20px 40px; background: rgba(248, 249, 250, 0.8);
-            backdrop-filter: blur(10px); display: flex; justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 10;
-        }
-        .topbar h1 { font-size: 20px; font-weight: 700; margin: 0; color: var(--text-dark); }
+    padding: 20px 40px;
+    background: rgba(248, 249, 250, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+        .topbar h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-dark);
+    text-align: center;
+}
         .topbar-right { display: flex; align-items: center; gap: 20px; }
         .insta-link { font-size: 22px; color: var(--text-dark); transition: 0.3s; }
         .insta-link:hover { color: #e1306c; transform: translateY(-2px); }
@@ -97,14 +109,16 @@
 
         /* Footer minimal */
         .footer-minimal {
-            padding: 24px 40px; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted);
-            margin-top: auto;
-        }
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: auto;
+}
 
-        @media (max-width: 900px) {
-            .topbar { padding: 20px; }
-        }
     </style>
 </head>
 <body>
@@ -113,11 +127,6 @@
         
         <header class="topbar">
             <h1>Shree Ram Mobile & Accessories</h1>
-            <div class="topbar-right">
-                <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" class="insta-link">
-                    <i class="fa-brands fa-instagram"></i>
-                </a>
-            </div>
         </header>
 
         <div class="workspace">
@@ -148,9 +157,13 @@
         </div>
 
         <footer class="footer-minimal">
-            <div>© 2026 Kushal Hirpara</div>
-            <div></div>
-        </footer>
+    <div>© 2026 Kushal Hirpara</div>
+    <div>
+        <a href="https://www.instagram.com/mr.hirapara.721/" target="_blank" class="insta-link">
+            <i class="fa-brands fa-instagram"></i>
+        </a>
+    </div>
+</footer>
     </div>
 
     <script>
