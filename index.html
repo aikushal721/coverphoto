@@ -1,488 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mobile Back Cover Maker - Shree Ram</title>
-
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      font-family: 'Segoe UI', Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding: 20px 10px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 18px;
-    }
-
-    .header h1 {
-      color: #fff;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .header p {
-      color: #00AEEF;
-      font-size: 12px;
-      margin-top: 4px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-bottom: 18px;
-    }
-
-    .btn {
-      padding: 10px 18px;
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.1s, opacity 0.2s;
-      letter-spacing: 0.5px;
-    }
-
-    .btn:hover { opacity: 0.88; transform: scale(1.03); }
-    .btn:active { transform: scale(0.97); }
-
-    .btn-blue { background: #00AEEF; color: #fff; }
-    .btn-green { background: #27ae60; color: #fff; }
-    .btn-orange { background: #e67e22; color: #fff; }
-    .btn-red { background: #e74c3c; color: #fff; }
-
-    input[type="file"] { display: none; }
-    canvas { display: none; }
-
-    .a4-wrapper {
-      background: #444;
-      padding: 8px;
-      border-radius: 6px;
-      box-shadow: 0 15px 60px rgba(0,0,0,0.7);
-      width: min(96vw, 1140px);
-    }
-
-    /* TRUE A4 LANDSCAPE RATIO */
-    .a4-page {
-      width: 100%;
-      aspect-ratio: 3508 / 2480;
-      background: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* FRAME IMAGE */
-    .frame-image {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      user-select: none;
-      pointer-events: none;
-    }
-
-    /* Upload Areas ONLY inside black blank spaces */
-    .upload-zone {
-      position: absolute;
-      overflow: hidden;
-      border-radius: 28px;
-      cursor: pointer;
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .upload-zone:hover {
-      outline: 3px dashed rgba(0,174,239,0.9);
-      outline-offset: -3px;
-    }
-
-    .upload-zone img.user-photo {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .placeholder {
-      text-align: center;
-      color: rgba(255,255,255,0.8);
-      padding: 20px;
-      pointer-events: none;
-    }
-
-    .placeholder .icon {
-      font-size: 34px;
-      margin-bottom: 8px;
-    }
-
-    .placeholder .label {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.85);
-      line-height: 1.5;
-    }
-
-    .photo-overlay {
-      position: absolute;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,174,239,0.9);
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 5px 12px;
-      border-radius: 12px;
-      opacity: 0;
-      transition: opacity 0.2s;
-      pointer-events: none;
-      white-space: nowrap;
-    }
-
-    .upload-zone:hover .photo-overlay {
-      opacity: 1;
-    }
-
-    .info-bar {
-      display: flex;
-      gap: 24px;
-      margin-top: 14px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 10px 24px;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .info-item { text-align: center; }
-    .info-val { font-size: 13px; font-weight: 700; color: #00AEEF; }
-    .info-key { font-size: 10px; color: #888; margin-top: 2px; }
-
-    .status {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #aaa;
-      text-align: center;
-      min-height: 16px;
-    }
-
-    @media print {
-      @page {
-        size: A4 landscape;
-        margin: 0;
-      }
-
-      html, body {
-        width: 297mm;
-        height: 210mm;
-        background: white !important;
-        margin: 0;
-        padding: 0;
-      }
-
-      .header, .controls, .info-bar, .status {
-        display: none !important;
-      }
-
-      .a4-wrapper {
-        padding: 0;
-        box-shadow: none;
-        background: white;
-        width: 297mm !important;
-      }
-
-      .a4-page {
-        width: 297mm !important;
-        height: 210mm !important;
-        aspect-ratio: auto !important;
-        box-shadow: none;
-        border-radius: 0;
-      }
-
-      .upload-zone:hover {
-        outline: none !important;
-      }
-
-      .photo-overlay {
-        display: none !important;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Cover Print App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; text-align: center; }
+        .controls { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold;}
+        .btn:hover { background: #0056b3; }
+        canvas { max-width: 100%; height: auto; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: white; margin-top: 10px;}
+        .upload-group { margin-bottom: 15px; background: #eee; padding: 10px; border-radius: 5px; }
+        #status { color: green; font-weight: bold; margin-bottom: 10px;}
+    </style>
 </head>
 <body>
 
-  <div class="header">
-    <h1>📱 Mobile Back Cover Maker</h1>
-    <p>Shree Ram Mobile &amp; Accessories | 75738 00245 — A4 Print Ready</p>
-  </div>
+    <div class="controls">
+        <h2>Cover Print Setup (Personal Use)</h2>
+        <div id="status">Template pre-loaded from repository</div>
 
-  <div class="controls">
-    <button class="btn btn-blue" onclick="document.getElementById('file1').click()">📷 Upload Left Photo</button>
-    <button class="btn btn-blue" onclick="document.getElementById('file2').click()">📷 Upload Right Photo</button>
-    <button class="btn btn-red" id="clearBtn1" onclick="clearPhoto(1)" style="display:none">✕ Clear Left</button>
-    <button class="btn btn-red" id="clearBtn2" onclick="clearPhoto(2)" style="display:none">✕ Clear Right</button>
-    <button class="btn btn-green" onclick="downloadPNG()">⬇️ Download A4 PNG</button>
-    <button class="btn btn-orange" onclick="window.print()">🖨️ Print Now</button>
-  </div>
-
-  <input type="file" id="file1" accept="image/*" onchange="loadPhoto(1, this)">
-  <input type="file" id="file2" accept="image/*" onchange="loadPhoto(2, this)">
-
-  <div class="a4-wrapper">
-    <div class="a4-page" id="a4Page">
-
-      <!-- MAIN FRAME IMAGE -->
-      <img src="Mobile Back Cover Area-01.png" class="frame-image" id="frameImage" alt="Frame Design">
-
-      <!-- LEFT BLANK AREA -->
-      <div class="upload-zone" id="zone1" onclick="document.getElementById('file1').click()">
-        <div class="placeholder" id="ph1">
-          <div class="icon">🖼️</div>
-          <div class="label">Click to Upload<br>Left Cover Photo</div>
+        <div class="upload-group">
+            <label><b>1. Upload Left Image:</b> </label>
+            <input type="file" id="leftUpload" accept="image/*">
         </div>
-        <div class="photo-overlay">📷 Upload Left Photo</div>
-      </div>
-
-      <!-- RIGHT BLANK AREA -->
-      <div class="upload-zone" id="zone2" onclick="document.getElementById('file2').click()">
-        <div class="placeholder" id="ph2">
-          <div class="icon">🖼️</div>
-          <div class="label">Click to Upload<br>Right Cover Photo</div>
+        
+        <div class="upload-group">
+            <label><b>2. Upload Right Image:</b> </label>
+            <input type="file" id="rightUpload" accept="image/*">
         </div>
-        <div class="photo-overlay">📷 Upload Right Photo</div>
-      </div>
 
+        <button class="btn" onclick="generatePreview()">1. Update Preview</button>
+        <button class="btn" onclick="downloadJPG()">2. Download JPG</button>
+        <button class="btn" onclick="downloadPDF()">3. Download PDF (Landscape)</button>
     </div>
-  </div>
 
-  <div class="info-bar">
-    <div class="info-item"><div class="info-val">A4 Landscape</div><div class="info-key">Page Format</div></div>
-    <div class="info-item"><div class="info-val">300 DPI</div><div class="info-key">Export Quality</div></div>
-    <div class="info-item"><div class="info-val">Frame Fixed</div><div class="info-key">Design Layout</div></div>
-    <div class="info-item"><div class="info-val">2 Upload Areas</div><div class="info-key">Photo Slots</div></div>
-    <div class="info-item"><div class="info-val">PNG / Print</div><div class="info-key">Export Options</div></div>
-  </div>
+    <canvas id="myCanvas"></canvas>
 
-  <div class="status" id="statusMsg">👆 Upload photos only inside the 2 blank areas</div>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
 
-  <canvas id="exportCanvas"></canvas>
+        // Setup variables
+        let templateImg = new Image();
+        let leftImg = new Image();
+        let rightImg = new Image();
 
-  <script>
-    const photos = { 1: null, 2: null };
-    const IMG_CACHE = { 1: null, 2: null };
-    const FRAME_SRC = "Mobile Back Cover Area-01.png";
+        // 1. ZAROORI CHANGE: Automating Template Loading
+        // **********************************************************
+        // YAHAN AAPKO APNE TEMPLATE IMAGE KA EXACT NAAM LIKHNA HAI 
+        // (Jo aapne GitHub me upload kiya hai, e.g., 'template.png')
+        templateImg.src = 'template.png'; 
+        // **********************************************************
 
-    let FRAME_IMG = new Image();
-    FRAME_IMG.crossOrigin = "anonymous";
-    FRAME_IMG.src = FRAME_SRC;
+        // Template load hone ke baad kuch initial setups (like setting canvas size) karein
+        templateImg.onload = function() {
+            canvas.width = templateImg.width; 
+            canvas.height = templateImg.height;
+            document.getElementById('status').innerHTML = "Template loaded: " + canvas.width + "x" + canvas.height + " px. Ready!";
+            // Starting clear
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(templateImg, 0, 0); 
+        };
 
-    // BLANK AREA COORDINATES based on your provided frame image
-    // percentages relative to full A4 preview
-    const zones = {
-  1: {
-    left: 0.095,
-    top: 0.07,
-    width: 0.39,
-    height: 0.86,
-    radius: 36
-  },
-  2: {
-    left: 0.515,
-    top: 0.07,
-    width: 0.39,
-    height: 0.86,
-    radius: 36
-  }
-};
+        // Images upload handlers (for user photos)
+        document.getElementById('leftUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], leftImg); });
+        document.getElementById('rightUpload').addEventListener('change', function(e) { loadImg(e.target.files[0], rightImg); });
 
-    function setStatus(msg) {
-      document.getElementById('statusMsg').textContent = msg;
-    }
+        function loadImg(file, imgObj) {
+            const reader = new FileReader();
+            reader.onload = function(event) { imgObj.src = event.target.result; }
+            if (file) reader.readAsDataURL(file);
+        }
 
-    function positionZones() {
-      const page = document.getElementById('a4Page');
-      const pageRect = page.getBoundingClientRect();
+        function generatePreview() {
+            // Safe checking
+            if (!templateImg.complete || templateImg.naturalWidth === 0) {
+                alert("Template image not found in repository. Make sure 'template.png' is uploaded to GitHub repo root folder.");
+                return;
+            }
 
-      [1, 2].forEach(slot => {
-        const zone = document.getElementById('zone' + slot);
-        const z = zones[slot];
+            // Canvas clear & base layer
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        zone.style.left = (z.left * 100) + '%';
-        zone.style.top = (z.top * 100) + '%';
-        zone.style.width = (z.width * 100) + '%';
-        zone.style.height = (z.height * 100) + '%';
-        zone.style.borderRadius = z.radius + 'px';
-      });
-    }
+            // X, Y, Width, Height (Adjust these decimals slightly if needed for fit)
+            let leftBox = { x: canvas.width * 0.12, y: canvas.height * 0.03, w: canvas.width * 0.35, h: canvas.height * 0.94 };
+            let rightBox = { x: canvas.width * 0.55, y: canvas.height * 0.03, w: canvas.width * 0.35, h: canvas.height * 0.94 };
 
-    function showPhotoInSlot(slot, src) {
-      const zone = document.getElementById('zone' + slot);
-      zone.innerHTML = `
-        <img class="user-photo" src="${src}" alt="Photo ${slot}">
-        <div class="photo-overlay">📷 Change ${slot === 1 ? 'Left' : 'Right'} Photo</div>
-      `;
-      document.getElementById('clearBtn' + slot).style.display = '';
-    }
+            // 1. Draw Left Image (Bottom layer)
+            if (leftImg.src) ctx.drawImage(leftImg, leftBox.x, leftBox.y, leftBox.w, leftBox.h);
 
-    function cacheImage(slot, src, callback = null) {
-      const img = new Image();
-      img.onload = () => {
-        IMG_CACHE[slot] = img;
-        photos[slot] = src;
-        if (callback) callback(img);
-      };
-      img.onerror = () => {
-        if (callback) callback(null);
-      };
-      img.src = src;
-    }
+            // 2. Draw Right Image (Bottom layer)
+            if (rightImg.src) ctx.drawImage(rightImg, rightBox.x, rightBox.y, rightBox.w, rightBox.h);
 
-    function loadPhoto(slot, input) {
-      const file = input.files[0];
-      if (!file) return;
+            // 3. Draw Template PNG on TOP (Mask layer)
+            ctx.drawImage(templateImg, 0, 0, canvas.width, canvas.height);
+        }
 
-      setStatus('Loading photo ' + slot + '...');
-      const reader = new FileReader();
+        function downloadJPG() {
+            const link = document.createElement('a');
+            link.download = 'Ready_To_Print_Covers.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        }
 
-      reader.onload = function(e) {
-        const src = e.target.result;
+        function downloadPDF() {
+            window.jspdf = window.jspdf || {};
+            const { jsPDF } = window.jspdf;
+            
+            // Landscape A4 PDF
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'px',
+                format: 'a4'
+            });
 
-        cacheImage(slot, src, (img) => {
-          if (img) {
-            showPhotoInSlot(slot, src);
-            setStatus('✅ Photo ' + slot + ' loaded — ' + img.width + '×' + img.height + 'px');
-          } else {
-            setStatus('❌ Failed to load image in slot ' + slot);
-          }
-        });
-      };
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      reader.readAsDataURL(file);
-      input.value = '';
-    }
-
-    function clearPhoto(slot) {
-      photos[slot] = null;
-      IMG_CACHE[slot] = null;
-
-      const zone = document.getElementById('zone' + slot);
-      zone.innerHTML = `
-        <div class="placeholder" id="ph${slot}">
-          <div class="icon">🖼️</div>
-          <div class="label">Click to Upload<br>${slot === 1 ? 'Left' : 'Right'} Cover Photo</div>
-        </div>
-        <div class="photo-overlay">📷 Upload ${slot === 1 ? 'Left' : 'Right'} Photo</div>
-      `;
-
-      document.getElementById('clearBtn' + slot).style.display = 'none';
-      setStatus('Photo ' + slot + ' cleared');
-    }
-
-    function downloadPNG() {
-      setStatus('⏳ Generating true A4 high-resolution PNG...');
-
-      // TRUE A4 LANDSCAPE @ 300 DPI
-      const W = 3508;
-      const H = 2480;
-
-      const canvas = document.getElementById('exportCanvas');
-      canvas.width = W;
-      canvas.height = H;
-
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-
-      // White background
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, W, H);
-
-      // Draw frame image first
-      if (FRAME_IMG.complete) {
-        ctx.drawImage(FRAME_IMG, 0, 0, W, H);
-      }
-
-      // Draw uploaded photos INSIDE blank zones only
-      [1, 2].forEach(slot => {
-        const img = IMG_CACHE[slot];
-        if (!img) return;
-
-        const z = zones[slot];
-        const x = z.left * W;
-        const y = z.top * H;
-        const w = z.width * W;
-        const h = z.height * H;
-        const r = z.radius * (W / 1122); // scale radius proportionally
-
-        ctx.save();
-        roundRect(ctx, x, y, w, h, r);
-        ctx.clip();
-        drawCoverFit(ctx, img, x, y, w, h);
-        ctx.restore();
-      });
-
-      const link = document.createElement('a');
-      link.download = 'ShreeRam-MobileCover-A4-300DPI.png';
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-
-      setStatus('✅ A4 high-quality PNG downloaded successfully');
-    }
-
-    function drawCoverFit(ctx, img, dx, dy, dw, dh) {
-      const imgRatio = img.width / img.height;
-      const areaRatio = dw / dh;
-
-      let sx, sy, sw, sh;
-
-      if (imgRatio > areaRatio) {
-        sh = img.height;
-        sw = img.height * areaRatio;
-        sy = 0;
-        sx = (img.width - sw) / 2;
-      } else {
-        sw = img.width;
-        sh = img.width / areaRatio;
-        sx = 0;
-        sy = (img.height - sh) / 2;
-      }
-
-      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
-    }
-
-    function roundRect(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.arcTo(x + w, y, x + w, y + r, r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
-      ctx.lineTo(x + r, y + h);
-      ctx.arcTo(x, y + h, x, y + h - r, r);
-      ctx.lineTo(x, y + r);
-      ctx.arcTo(x, y, x + r, y, r);
-      ctx.closePath();
-    }
-
-    window.addEventListener('load', positionZones);
-    window.addEventListener('resize', positionZones);
-  </script>
-
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save("Ready_To_Print_Covers.pdf");
+        }
+    </script>
 </body>
 </html>
