@@ -32,13 +32,13 @@
             overflow-x: hidden;
         }
 
-        /* --- New Header Bar --- */
+        /* --- Minimal Header Bar --- */
         .header {
             background-color: #ffffff;
             border-bottom: 1px solid var(--border-color);
             padding: 15px 30px;
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Centered main title */
             align-items: center;
             position: relative;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -100,7 +100,7 @@
             background: white;
         }
 
-        /* --- Button Bar --- */
+        /* --- Button Bar (Directly below canvas) --- */
         .button-bar {
             background-color: transparent;
             padding: 20px 30px;
@@ -132,7 +132,7 @@
         .btn-danger { background: white; color: var(--danger); border: 1px solid #fca5a5; }
         .btn-danger:hover { background: #fef2f2; }
 
-        /* --- Minimal Footer --- */
+        /* --- New Minimal Footer --- */
         .footer-minimal {
             background-color: #ffffff;
             border-top: 1px solid var(--border-color);
@@ -192,7 +192,8 @@
 
     <footer class="footer-minimal">
         <div>
-            © 2026 Graphy. All rights reserved. </div>
+            © 2026 Graphy. All rights reserved.
+        </div>
         <div class="footer-minimal-links">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>
@@ -212,7 +213,7 @@
         let rightImg = new Image();
 
         // Coordinates: Mask areas relative to template width/height (decimal percentage)
-        // These coordinates remove the white space based on the template fromTurn 3
+        // Adjust these slightly if your border line changes
         const MASK_LEFT = { x: 0.12, y: 0.03, w: 0.35, h: 0.94 };
         const MASK_RIGHT = { x: 0.55, y: 0.03, w: 0.35, h: 0.94 };
 
