@@ -56,6 +56,20 @@
             flex-direction: column; 
             overflow-y: auto; 
         }
+        @media (max-width: 768px) {
+
+    body {
+        height: auto; /* 🔥 important */
+    }
+
+    .main-content {
+        min-height: 100vh;
+    }
+
+    .footer-minimal {
+        margin-top: 20px; /* instead of auto */
+    }
+}
 
         /* Topbar */
         .topbar {
@@ -175,6 +189,8 @@
 }
         /* Footer minimal */
         .footer-minimal {
+            position: sticky;
+    bottom: 0;
     padding: 18px 40px;
     border-top: 1px solid var(--border);
     display: flex;
@@ -466,32 +482,35 @@
     }
 
     function endInteraction(e) {
-        if (!isDragging) {
-            if (!dragHasMoved) {
-                const coords = getCanvasCoords(e.changedTouches ? e.changedTouches[0] : e);
-                const masks = getMasksPx();
-                if (isCoordInMask(coords, masks.left)) leftFilePicker.click();
-                else if (isCoordInMask(coords, masks.right)) rightFilePicker.click();
-            }
+    if (!isDragging && !dragHasMoved) {
+        const coords = getCanvasCoords(e.changedTouches ? e.changedTouches[0] : e);
+        const masks = getMasksPx();
+
+        if (isCoordInMask(coords, masks.left)) {
+            setTimeout(() => leftFilePicker.click(), 100);
+        } else if (isCoordInMask(coords, masks.right)) {
+            setTimeout(() => rightFilePicker.click(), 100);
         }
-        isDragging = false;
-        activeState = null;
     }
+    isDragging = false;
+    activeState = null;
+}
 
     canvas.addEventListener('mousedown', startInteraction);
     window.addEventListener('mousemove', moveInteraction, { passive: false });
     window.addEventListener('mouseup', endInteraction);
 
     canvas.addEventListener('touchstart', (e) => {
-        if (e.touches.length === 2) {
-            initialPinchDistance = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            );
-        } else {
-            startInteraction(e);
-        }
-    }, { passive: false });
+    if (e.touches.length === 2) {
+        initialPinchDistance = Math.hypot(
+            e.touches[0].clientX - e.touches[1].clientX,
+            e.touches[0].clientY - e.touches[1].clientY
+        );
+    } else {
+        e.preventDefault(); // 🔥 IMPORTANT FIX
+        startInteraction(e);
+    }
+}, { passive: false });
 
     canvas.addEventListener('touchmove', (e) => {
         if (e.touches.length === 2 && initialPinchDistance && activeState) {
